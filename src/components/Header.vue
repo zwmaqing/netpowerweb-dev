@@ -1,6 +1,6 @@
 <template>
     <div class="header">
-        <div class="logo">智能播放服务器管理系统</div>
+        <div class="logo">播放服务器-管理系统</div>
         <div class="user-info">
             <el-dropdown trigger="click" @command="handleCommand">
                 <span class="el-dropdown-link">
@@ -81,9 +81,9 @@ export default {
     position: relative;
     box-sizing: border-box;
     width: 100%;
-    height: 70px;
+    height: 50px;
     font-size: 22px;
-    line-height: 70px;
+    line-height: 50px;
     color: #fff;
 }
 
@@ -112,7 +112,7 @@ export default {
 .user-info .user-logo {
     position: absolute;
     left: 0;
-    top: 15px;
+    top: 5px;
     width: 40px;
     height: 40px;
     border-radius: 50%;
@@ -120,5 +120,12 @@ export default {
 
 .el-dropdown-menu__item {
     text-align: center;
+}
+
+@media(max-width:768px) {
+
+    .user-info{
+        padding-right: 0em;
+    }
 }
 </style>

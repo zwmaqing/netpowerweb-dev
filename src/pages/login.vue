@@ -1,7 +1,8 @@
 <template>
     <div class="login-wrap">
         <!-- <img class="user-logo" src="../../static/img/zwSound-d.png"> -->
-        <div class="ms-title">智能播放服务器管理系统</div>
+        <div class="ms-title">
+            播放服务器-管理系统</div>
         <div class="ms-login">
             <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="0px" class="demo-ruleForm">
                 <el-form-item prop="userName">
@@ -74,27 +75,28 @@ export default {
             api.System(data)
                 .then(res => {
                     if (res.StatusCode === 200) {
+
                         //_.toast('登录成功！' + 'Token:' + res.Data.Token);
                         this.SET_USERNAME(data.userName);
                         this.setLogin(res.Status);
                         this.SET_TOKENSTR(res.Data.Token);
                         this.notice = '登录成功！';
-                       // localStorage.setItem('Sys_Token', res.Data.Token);
-                      //  var nowDate = new Date();
-                       // localStorage.setItem('Sys_DateTime', nowDate.toLocaleString());
-                        _.setCookie("User_Login_Token",res.Data.Token);
-                        _.setCookie("User_Login_Name",data.userName);
+                        // localStorage.setItem('Sys_Token', res.Data.Token);
+                        //  var nowDate = new Date();
+                        // localStorage.setItem('Sys_DateTime', nowDate.toLocaleString());
+                        _.setCookie("User_Login_Token", res.Data.Token);
+                        _.setCookie("User_Login_Name", data.userName);
                         this.$router.replace('/home');//进入主页
                     }
                     else {
-                       // console.log('发生错误！错误信息：' + res.StatusMessage);
+                        // console.log('发生错误！错误信息：' + res.StatusMessage);
                         this.SET_USERNAME('');
                         this.SET_ISLOGIN(false);
                         this.SET_TOKENSTR('');
                         //_.toast('发生错误！错误信息：' + res.StatusMessage);
                         this.notice = '登录错误！' + res.DetailedInfo;
                         this.$msgbox({
-                            title:"错误信息",
+                            title: "错误信息",
                             type: 'error',
                             message: '登录错误！请确认登录用户名和密码是否正确。'
                         });
@@ -107,9 +109,9 @@ export default {
                     this.SET_TOKENSTR('');
                     this.notice = '登录错误！错误信息：网络故障或设备关闭。';
                     this.$msgbox({
-                            type: 'error',
-                            message: this.notice
-                        });
+                        type: 'error',
+                        message: this.notice
+                    });
                 })
         }
     },
@@ -124,7 +126,7 @@ export default {
 
 <style>
 .login-wrap {
-    position: relative;
+    /* position: relative;*/
     width: 100%;
     height: 100%;
 }
@@ -133,9 +135,9 @@ export default {
     position: absolute;
     top: 50%;
     width: 100%;
-    margin-top: -230px;
+    margin-top: -8em;
     text-align: center;
-    font-size: 30px;
+    font-size: 1.875em;
     color: #fff;
 }
 
@@ -143,14 +145,17 @@ export default {
     position: absolute;
     left: 50%;
     top: 50%;
-    width: 300px;
-    height: 180px;
-    margin: -150px 0 0 -190px;
-    padding: 40px;
-    border-radius: 5px;
+    width: 18em;
+    height: 12em;
+    margin: -9.375em 0 0 -11.875em;
+    padding: 2.5em;
+    border-radius: 0.3125em;
     background: #fff;
 }
 
+.el-input__inner {
+    height: 46px;
+}
 
 .login-btn {
     text-align: center;
@@ -158,6 +163,6 @@ export default {
 
 .login-btn button {
     width: 100%;
-    height: 36px;
+    height: 3em;
 }
 </style>

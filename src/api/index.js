@@ -4,11 +4,11 @@ import { Loading, Message } from 'element-ui'
 // axios 配置
 axios.defaults.timeout = 3000;
 //axios.defaults.baseURL = 'http://localhost:3000';
-axios.defaults.baseURL = 'http://192.168.10.196';
+axios.defaults.baseURL = 'http://192.168.10.189';
 
 // 创建实例时设置配置的默认值
 var instance = axios.create({
-    baseURL: 'http://192.168.10.196'
+    baseURL: 'http://192.168.10.106'
 });
 
 // http请求拦截器

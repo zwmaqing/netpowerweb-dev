@@ -8,7 +8,8 @@ const state = {
 // getters
 const getters = {
     system_Width: state => state.system_Width,
-    system_Height: state => state.system_Height
+    system_Height: state => state.system_Height,
+    system_IsMobileDev: state => state.system_Width < 768
 }
 
 const mutations = {

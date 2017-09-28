@@ -17,6 +17,7 @@ var cookieUserToken = _.getCookie("User_Login_Token");
 const state = {
     screenWidth: 0,
     screenHeight: 0,
+    isMobileDev: false,
     userName: cookieUserName,
     isLogin: cookieUserToken != null && cookieUserToken.length > 6,
     tokenStr: cookieUserToken

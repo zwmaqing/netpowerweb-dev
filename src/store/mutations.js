@@ -2,8 +2,9 @@ import * as types from './mutation-types'
 
 export default {
     [types.SET_WIDTH](state, width) {
-        state.screenWidth = width
-            // console.log("change:" + state.screenWidth)
+        state.screenWidth = width;
+        state.isMobileDev = state.screenWidth < 768;
+        // console.log("change:" + state.screenWidth)
     },
     [types.SET_HEIGHT](state, height) {
         state.screenHeight = height

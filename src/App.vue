@@ -28,7 +28,8 @@ export default {
 /* @import '../static/css/element-ui/lib/theme-default/index.css'; */
 @import "../static/css/main.css";
 @import "../static/css/color-dark.css";
-
+@import "../static/css/font_icon.css";
+@import "../static/css/buttons.css";
 
 /* 深色主题 */
 

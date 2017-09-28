@@ -6,6 +6,9 @@ import router from './router'
 import store from './store'
 import ElementUI from 'element-ui';
 
+// import Mint from 'mint-ui';
+// Vue.use(Mint);
+
 import 'element-ui/lib/theme-default/index.css';
 
 Vue.config.productionTip = false
@@ -43,6 +46,8 @@ new Vue({
             // console.log("system.systemWidth:" + store.state.system.system_Width);
             //启动时设置初始值
             //Global Actions
+            // window.resizeTo(winSize().height, (winSize().width + 10));
+            // console.log("change:" + winSize().width);
         that.setWidth(winSize().width);
         that.setHeight(winSize().height);
         //modules system Actions
@@ -52,6 +57,7 @@ new Vue({
         //绑定事件方法
         window.onresize = function() {
             return function() {
+                console.log('window.onresized');
                 //Global Mutations
                 that.SET_WIDTH(winSize().width);
                 //Global Actions

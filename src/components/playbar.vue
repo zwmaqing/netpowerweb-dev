@@ -1,41 +1,76 @@
 <template>
-    <div class="playbar">
+    <div class="playbar" v-bind:class="{ mobile: isMobileDev }">
+        <div class="payset-bar">
+            <el-popover ref="popmusiclist" placement="top" width="336" trigger="click">
+                <el-table :data="runingTask.Projects">
+                    <el-table-column width="50" property="FileIndex" label="序号"></el-table-column>
+                    <el-table-column width="200" property="FileName" label="曲目名"></el-table-column>
+                    <el-table-column width="80" property="TimeSpan" label="时长"></el-table-column>
+                </el-table>
+            </el-popover>
+            <el-popover ref="popvolumeadj" placement="top" width="300" trigger="click" >
+                <div style="">
+                    <!-- <mt-range v-model="currentProject.Volume"></mt-range> -->
+                    <el-slider v-model="currentProject.Volume" show-input :step="1"  @change="valumchange"></el-slider>
+                </div>
+            </el-popover>
+            
+            <button class="button button-primary button-circle button-small juzhongd" :disabled="!isTaskRuning" v-popover:popvolumeadj>
+                <i class="icon16 icon-volume-up"></i>
+            </button>
+            <el-tooltip class="item" effect="dark" content="均衡调节" placement="top" v-show="isPcDev">
+                <button class="button button-primary button-circle button-small juzhongz" v-on:click="equalizingControl" :disabled="!isTaskRuning">
+                    <i class="icon16 icon-sliders"></i>
+                </button>
+            </el-tooltip>
+            <button class="button button-primary button-circle button-small juzhongz" :disabled="!isTaskRuning" v-popover:popmusiclist>
+                <i class="icon16 icon-list-ul"></i>
+            </button>
+            <el-tooltip class="item" effect="dark" content="播放模式" placement="top" v-show="isPcDev">
+                <button class="button button-primary button-circle button-small juzhongz" :disabled="!isTaskRuning" @click="playmodelswich">
+                    <i class="icon16 icon-retweet"></i>
+                </button>
+            </el-tooltip>
+        </div>
         <div class="play-box">
-            <div class="music-avatar" @click="showPlay()">
-                <!-- <img v-if="audio[0].al" v-lazy="audio[0].al.picUrl" alt="">
-                <img v-else v-lazy="audio[0].album.picUrl" alt=""> -->
+            <div class="pay-front">
+                <button class="button button-royal button-circle" v-bind:class="{ 'button-small': isMobileDev }" v-on:click="_previous">
+                    <i class="icon16 icon-step-backward"></i>
+                </button>
             </div>
-            <div class="music-info" @click="showPlay()">
-                <div class="music-name">{{audio[0].name}}</div>
-                <div class="music-s" v-if="audio[0].ar">{{audio[0].ar[0].name}}</div>
-                <div class="music-s" v-else>{{audio[0].artists[0].name}}</div>
+            <div class="pay-play">
+                <button class="button button-royal button-circle" v-bind:class="{ 'button-large': isPcDev }" v-on:click="_playPause">
+                    <i class="icon24 icon-play"></i>
+                </button>
             </div>
-            <div class="music-play">
-                <i class="icon" v-if="playing" @click="_pause()">&#xe60a;</i>
-                <i class="icon" v-else @click="_play()">&#xe606;</i>
-            </div>
-            <div class="music-next" @click="_next()">
-                <i class="icon">&#xe718;</i>
-            </div>
-            <div class="music-list" @click="showList()">
-                <i class="icon">&#xe927;</i>
+            <div class="pay-next">
+                <button class="button button-royal button-circle" v-bind:class="{ 'button-small': isMobileDev }" v-on:click="_next">
+                    <i class="icon16 icon-step-forward"></i>
+                </button>
             </div>
         </div>
-        <div class="progress-bar">
-            <div class="play" :style="{width: (now / duration).toFixed(3)*100 + '%'}"></div>
+        <div class="progress-bar" style="padding-top: 3px;">
+            <div class="remainingTimeFlag">
+                <span v-show="isPcDev">-{{currentProject.RemainingTime}}</span>
+            </div>
+            <div class="finishTimeFlag">
+                <span v-show="isPcDev">{{currentProject.FinishTime}}</span>
+            </div>
+            <div class="musicnameFlag">
+                <span style="" v-show="isPcDev">{{currentProject.FileName}}</span>
+            </div>
+            <el-slider v-model="currentProject.PlayPercent" :disabled="!isTaskRuning" @input="percentinput" @change="playPercentchange"></el-slider>
         </div>
-        <audio preload ref="myAudio" :src="audioUrl" @ended="_next()"></audio>
-        <transition name="fold">
-            <v-listen-list v-show="showListenList"></v-listen-list>
-        </transition>
+        <!-- <audio preload ref="myAudio" :src="audioUrl" @ended="_next()"></audio> -->
+        <!-- <transition name="fold">
+                                    <v-listen-list v-show="showListenList"></v-listen-list>
+                                    </transition> -->
     </div>
 </template>
 
 <script>
 import listenList from './listenList'
-
 import { mapGetters } from 'vuex'
-
 import api from '../api'
 import * as _ from '../util/tools'
 
@@ -45,38 +80,60 @@ export default {
     },
     data() {
         return {
-            now: '',
-            duration: '200.045714',
-            playing:true,
-            audioUrl:'http://p3.music.126.net/lDyytkTaPYVTb1Vpide6AA==/18591642115187138.jpg',
-            showListenList:false,
-            audio: [
-                {
-                    "name": "刚好遇见你",
-                    "id": 439915614,
-                    "ar": [
-                        {
-                            "id": 4130,
-                            "name": "李玉刚",
-                        }
-                    ],
-                    "al": {
-                        "name": "刚好遇见你",
-                        "picUrl": "http://p3.music.126.net/lDyytkTaPYVTb1Vpide6AA==/18591642115187138.jpg",
+            isTaskRuning: true,
+            playing: false,
+            showListenList: false,
+            playStatus: 'playing',
+            //playing pause
+            currentProject: {
+                FileIndex: 1,
+                FileName: '爸爸妈妈我爱你们.mp3',
+                TimeSpan: '00:03:12',
+                PlayPercent: 0,
+                FinishTime: '00:00:00',
+                RemainingTime: '00:00:00',
+                Volume: 80
+            },
+            runingTask: {
+                TaskID: 101,
+                TaskName: '早操音乐',
+                TaskType: 'Temp',
+                StartTime: '08:30:00',
+                TimeSpan: '00:30:00',
+                Week: '',
+                Volum: '80-80',
+                Projects: [
+                    {
+                        FileIndex: 1,
+                        FileName: '爸爸妈妈我爱你们.mp3',
+                        TimeSpan: '00:03:12'
                     },
-                }
-            ]
+                    {
+                        FileIndex: 2,
+                        FileName: "爸爸妈妈我爱你们--2.mp3",
+                        TimeSpan: "00:03:12"
+                    },
+                    {
+                        FileIndex: 3,
+                        FileName: "爸爸妈妈我爱你们--3.mp3",
+                        TimeSpan: "00:03:12"
+                    }
+
+                ],
+                GroupLiast: '100',
+                Status: "Start",
+                IsSystem: false
+            }
         }
     },
     computed: {
-        // ...mapGetters([
-        //     'listenLists',
-        //     'audio',
-        //     'audioUrl',
-        //     'showListenList',
-        //     'playing',
-        //     'size'
-        // ]),
+        ...mapGetters({
+            screenWidth: 'screenWidth',
+            screenHeight: 'screenHeight',
+            isMobileDev: 'isMobileDev',
+            isPcDev: 'isPcDev',
+            isLogin: 'isLogin'
+        })
     },
     mounted() {
         // let timer
@@ -91,16 +148,44 @@ export default {
         // })
     },
     methods: {
-        _play() {
-            // if (this.audioUrl) {
-            //     this.$store.dispatch('setPlaying', true)
-            // }
+        _playPause() {
+            if (!this.isTaskRuning) {
+                this.$message({
+                    showClose: true,
+                    message: '当前没有任务正在运行.',
+                    type: 'warning'
+                });
+            } else {
+                //if playStatus== playing set pause  if playStatus==paused set playing
+                //     this.$store.dispatch('setPlaying', true)
+                //this.$store.dispatch('setPause', true)
+                console.log('click playPause');
+            }
         },
-        _pause() {
-            // this.$store.dispatch('setPlaying', false)
+        _previous() {
+            if (!this.isTaskRuning) {
+                this.$message({
+                    showClose: true,
+                    message: '当前没有任务正在运行.',
+                    type: 'warning'
+                });
+            } else {
+                // this.$store.dispatch('playPreviousProject', true)
+                console.log('click playPreviousProject');
+            }
         },
         _next() {
-            // this.$store.dispatch('setPlaying', false)
+            if (!this.isTaskRuning) {
+                this.$message({
+                    showClose: true,
+                    message: '当前没有任务正在运行.',
+                    type: 'warning'
+                });
+            } else {
+                // this.$store.dispatch('playNextProject', true)
+                console.log('click playNextProject');
+            }
+
             // this.$store.dispatch('setShowPlayLoading', true)
             // for (let i = 0; i < this.listenLists.length; i++) {
             //     if (this.listenLists[i].name === this.audio[0].name) {
@@ -118,11 +203,31 @@ export default {
             // }
         },
         showList() {
-            //  this.$store.dispatch('setShowListenList', true)
+            //this.$store.dispatch('setShowListenList', true)
         },
         showPlay() {
-            // this.$store.dispatch('setShowPlay', true)
+            //this.$store.dispatch('setShowPlay', true)
         },
+        percentinput(newvalum) {
+            //手动调整拖放曲目的播放进度
+           // console.log('percentChanged to ' + newvalum);
+        },
+        playPercentchange(newvalum) {
+            console.log('playPercentchange to ' + newvalum);
+        },
+        playmodelswich() {
+            // console.log('playmodelswich');
+        },
+        equalizingControl() {
+            this.$message({
+                showClose: true,
+                message: '对不起，当前机型好像不支持远程EQ调节.',
+                type: 'warning'
+            });
+        },
+        valumchange(newvalum) {
+            console.log('valumchange to ' + newvalum);
+        }
     },
     watch: {
         // playing() {
@@ -143,70 +248,109 @@ export default {
 @import '../assets/css/function';
 
 .playbar {
-    background: #ea2448;
-    // color: #fff;
-    transition: all .7s ease-in;
-    display: block;
+    transition: all .7s ease-in; // display: flex;
+    background: #353c46;
     position: absolute;
-     width: 100%;
-     height: 70px;
-     bottom:0px;
+    width: 100%;
+    height: 3.75em;
+    bottom: 0em; // border-width: 1px;
+    // border-style: solid;
+    // border-color: #d3d3d3;
     .play-box {
-        display: flex;
-        align-items: center;
-        height: px2rem(110px);
-        color: #fff;
-        cursor: pointer;
-        .music-avatar {
-            width: px2rem(80px);
-            height: px2rem(80px);
-            border-radius: 50%;
-            margin: 0 px2rem(20px) 0 px2rem(30px);
-            overflow: hidden;
-            img {
-                width: 100%;
-            }
+        width: 11.25em;
+        float: left;
+        height: 100%;
+        .pay-front {
+            position: absolute;
+            top: 18%;
+            left: 0.7em;
         }
-        .music-info {
-            flex: 4;
-            .music-name {
-                font-size: px2rem(30px);
-                font-weight: bold;
-            }
-            .music-s {
-                font-size: px2rem(22px);
-                color: rgba(255, 255, 255, .7);
-                margin-top: px2rem(5px);
-            }
+        .pay-play {
+            position: absolute;
+            top: 10%;
+            left: 4em;
         }
-        .music-play,
-        .music-next,
-        .music-list {
-            flex: 1;
-            height: 100%;
-            line-height: px2rem(110px);
-            cursor: pointer;
-            .icon {
-                font-size: px2rem(44px);
-                display: block;
-            }
+        .pay-next {
+            position: absolute;
+            top: 18%;
+            left: 8em;
         }
     }
     .progress-bar {
-        height: px2rem(4px);
-        background: linear-gradient(#902541, #902444);
-        .play {
-            height: 100%;
-            background: #fe7498;
+        margin-left: 11.25em;
+        margin-right: 12em;
+        height: 100%;
+        span {
+            color: #fff;
+        }
+        div {
+            height: 1em;
+        }
+        .remainingTimeFlag {
+            width: 4.375em;
+            float: right;
+        }
+        .finishTimeFlag {
+            width: 4.375em;
+            float: left;
+        }
+        .musicnameFlag {
+            margin-left: 4.375em;
+            margin-right: 4.375em;
+            text-align: center;
+            margin-top: -0.2em;
         }
     }
-    .fold-enter-active,
-    .fold-leave-active {
-        transition: transform .3s ease-in;
+    .payset-bar {
+        float: right;
+        width: 12em;
+        height: 100%;
+        .juzhongd {
+            margin: 1.25em 0.5em 1.25em 1.5em;
+        }
+        .juzhongz {
+            margin: 1.25em 0.5em 1.25em 0em;
+        }
     }
-    .fold-enter,
-    .fold-leave-active {
-        transform: translate3d(0, 100%, 0);
+}
+
+.mobile {
+    height: 2.75em;
+    .play-box {
+        width: 6.85em;
+        height: 100%;
+        .pay-front {
+            position: absolute;
+            top: 18%;
+            left: 0.2em;
+        }
+        .pay-play {
+            position: absolute;
+            top: 5%;
+            left: 2.2em;
+        }
+        .pay-next {
+            position: absolute;
+            top: 18%;
+            left: 4.8em;
+        }
+    }
+    .progress-bar {
+        margin-left: 6.85em;
+        margin-right: 5em;
+        margin-top: -0.8em;
+        .el-slider {
+            margin: 2px 4px 5px 6px;
+        }
+    }
+    .payset-bar {
+        width: 5em;
+        .juzhongd {
+            margin: 0.65em 0.3em 0.65em 0.3em;
+        }
+        .juzhongz {
+            margin: 0.65em 0.3em 0.65em 0em;
+        }
     }
 }
 </style>

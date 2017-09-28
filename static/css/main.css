@@ -23,14 +23,18 @@ a {
 .content {
     background: none repeat scroll 0 0 #fff;
     position: absolute;
-    left: 250px;
-    right: 0;
-    top: 70px;
-    bottom: 70px;
+    left: 11.25em;
+    right: 0em;
+    top: 3.125em;
+    bottom: 3.75em;
     width: auto;
-    padding: 20px;
+    padding: 0.3125em;
     box-sizing: border-box;
-    overflow-y: scroll;
+    /*overflow-y: scroll;*/
+}
+
+.el-popover {
+    padding: 5px;
 }
 
 .crumbs {
@@ -38,22 +42,27 @@ a {
 }
 
 .pagination {
-    margin: 20px 0;
+    margin: 1.25em 0em;
     text-align: right;
 }
 
 .plugins-tips {
-    padding: 20px 10px;
-    margin-bottom: 20px;
+    padding: 1.25em 1.25em;
+    margin-bottom: 1.25em;
 }
 
 .el-button+.el-tooltip {
-    margin-left: 10px;
+    margin-left: 0.625em;
 }
 
 .el-table td,
 .el-table th {
-    padding: 5px 18px;
+    padding: 2px 2px;
+}
+
+.el-table .cell {
+    padding-left: 5px;
+    padding-right: 5px;
 }
 
 .el-table tr:hover {
