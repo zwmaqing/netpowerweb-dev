@@ -13,15 +13,15 @@
             <el-submenu index="3">
                 <template slot="title">
                     <i class="icon16 icon-bullhorn"></i> 广播播报管理</template>
-                <el-menu-item index="broadcast">语音广播</el-menu-item>
-                <el-menu-item index="broad-class">分班播报</el-menu-item>
+                <el-menu-item index="speak">语音广播</el-menu-item>
+                <el-menu-item index="speak-class">分班播报</el-menu-item>
             </el-submenu>
             <el-submenu index="4">
                 <template slot="title">
                     <i class="el-icon-setting"></i>系统设置</template>
-                <el-menu-item index="setting">基础配置</el-menu-item>
+                <el-menu-item index="settings">基础配置</el-menu-item>
                 <el-menu-item index="eqadjust">音频EQ平衡</el-menu-item>
-                <el-menu-item index="microphone">无线话筒</el-menu-item>
+                <el-menu-item index="microphone">话筒管理</el-menu-item>
             </el-submenu>
         </el-menu>
     </div>

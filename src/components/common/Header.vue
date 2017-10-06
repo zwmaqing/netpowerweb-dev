@@ -1,23 +1,41 @@
 <template>
     <div class="header">
-        <div class="logo">播放服务器-管理系统</div>
-        <div class="user-info">
-            <el-dropdown trigger="click" @command="handleCommand">
-                <span class="el-dropdown-link">
-                    <img class="user-logo" src="../../static/img/zwSound-d.png">.{{userName}}
-                </span>
-                <el-dropdown-menu slot="dropdown">
-                    <el-dropdown-item command="loginout">
-                        <i class="el-icon-delete"></i> 退出</el-dropdown-item>
-                </el-dropdown-menu>
-            </el-dropdown>
-        </div>
+        <div class="logo" v-show="isPcDev">播放服务器-管理系统</div>
+            <div class="user-info"  v-show="isPcDev">
+                <el-dropdown trigger="click" @command="handleCommand">
+                    <span class="el-dropdown-link">
+                        <img class="user-logo" src="../../../static/img/zwSound-d.png">.{{userName}}
+                    </span>
+                    <el-dropdown-menu slot="dropdown">
+                        <el-dropdown-item command="loginout">
+                            <i class="el-icon-delete"></i> 退出</el-dropdown-item>
+                    </el-dropdown-menu>
+                </el-dropdown>
+            </div>
+
+    <el-menu theme="dark"  class="el-menu-demo" mode="horizontal" router v-show="isMobileDev">
+        <el-submenu index="1">
+            <template slot="title">播放管理</template>
+            <el-menu-item index="tasks">定时播放</el-menu-item>
+            <el-menu-item index="files">播放资源</el-menu-item>
+        </el-submenu>
+        <el-menu-item index="groups">分区分组</el-menu-item>
+        <el-menu-item index="speak">广播播报</el-menu-item>
+        <el-submenu index="4">
+            <template slot="title">设备管理</template>
+            <el-menu-item index="eqadjust">音频EQ均衡</el-menu-item>
+            <el-menu-item index="microphone">话筒管理</el-menu-item>
+            <el-menu-item index="settings">基础配置</el-menu-item>
+            <el-menu-item index="loginout" @click="_SignOut">退出登录</el-menu-item>
+        </el-submenu>
+    </el-menu>
+
     </div>
 </template>
 <script>
 import { mapGetters, mapMutations } from 'vuex'
-import api from '../api/index'
-import * as _ from '@/util/tools'
+import api from '../../api/index'
+import * as _ from '../../util/tools'
 
 export default {
     data() {
@@ -29,7 +47,9 @@ export default {
         ...mapGetters({
             userName: 'userName',
             isLogin: 'isLogin',
-            tokenStr: 'tokenStr'
+            tokenStr: 'tokenStr',
+            isMobileDev: 'isMobileDev',
+            isPcDev: 'isPcDev'
         })
     },
     methods: {
@@ -124,7 +144,7 @@ export default {
 
 @media(max-width:768px) {
 
-    .user-info{
+    .user-info {
         padding-right: 0em;
     }
 }

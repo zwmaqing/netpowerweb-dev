@@ -31,7 +31,7 @@
 
 import { mapGetters } from 'vuex'
 
-import api from '../api'
+import api from '../../api'
 
 export default {
     data() {
@@ -99,7 +99,7 @@ showListenList:false,
 </script>
 
 <style lang="scss" scoped>
-@import '../assets/css/function.scss';
+@import '../../assets/css/function.scss';
 
 .listen-list {
     position: absolute;

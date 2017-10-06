@@ -13,9 +13,9 @@
 
 <script>
 import { mapGetters } from 'vuex';
-import vHead from '@/components/Header';
-import vSidebar from '@/components/Sidebar';
-import vPlaybar from '@/components/playbar'
+import vHead from '../common/Header';
+import vSidebar from '../common/Sidebar';
+import vPlaybar from '../common/playbar'
 export default {
     components: {
         vHead, vSidebar, vPlaybar

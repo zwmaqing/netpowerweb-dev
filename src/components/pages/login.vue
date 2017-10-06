@@ -9,7 +9,7 @@
                     <el-input v-model="ruleForm.userName" placeholder="登录用户名"></el-input>
                 </el-form-item>
                 <el-form-item prop="password">
-                    <el-input type="password" placeholder="密码口令" v-model="ruleForm.password" @keyup.enter.native="submitForm('ruleForm')"></el-input>
+                    <el-input type="password" placeholder="密码口令" v-model="ruleForm.password" @keyup.enter.native="submitForm('ruleForm')">123456</el-input>
                 </el-form-item>
                 <div class="login-btn">
                     <el-button type="primary" @click="submitForm('ruleForm')">登录</el-button>
@@ -21,8 +21,8 @@
 </template>
 
 <script>
-import api from '../api/index'
-import * as _ from '@/util/tools'
+import api from '../../api/index'
+import * as _ from '../../util/tools'
 
 import { mapGetters, mapActions, mapMutations } from 'vuex'
 import { MessageBox } from 'element-ui';
@@ -75,8 +75,6 @@ export default {
             api.System(data)
                 .then(res => {
                     if (res.StatusCode === 200) {
-
-                        //_.toast('登录成功！' + 'Token:' + res.Data.Token);
                         this.SET_USERNAME(data.userName);
                         this.setLogin(res.Status);
                         this.SET_TOKENSTR(res.Data.Token);
@@ -86,7 +84,8 @@ export default {
                         // localStorage.setItem('Sys_DateTime', nowDate.toLocaleString());
                         _.setCookie("User_Login_Token", res.Data.Token);
                         _.setCookie("User_Login_Name", data.userName);
-                        this.$router.replace('/home');//进入主页
+                        this.$router.push('/tasks');//进入主页
+                        //console.log('push home');
                     }
                     else {
                         // console.log('发生错误！错误信息：' + res.StatusMessage);

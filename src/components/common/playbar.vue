@@ -71,8 +71,8 @@
 <script>
 import listenList from './listenList'
 import { mapGetters } from 'vuex'
-import api from '../api'
-import * as _ from '../util/tools'
+import api from '../../api'
+import * as _ from '../../util/tools'
 
 export default {
     components: {
@@ -245,7 +245,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import '../assets/css/function';
+@import '../../assets/css/function';
 
 .playbar {
     transition: all .7s ease-in; // display: flex;
