@@ -179,3 +179,7 @@ a {
 .el-submenu__title {
     padding: 0 5px 0 10px;
 }
+
+.el-input-number {
+    width: 110px;
+}

@@ -9,7 +9,7 @@ import ElementUI from 'element-ui';
 // import Mint from 'mint-ui';
 // Vue.use(Mint);
 
-import 'element-ui/lib/theme-default/index.css';
+import 'element-ui/lib/theme-chalk/index.css';
 
 Vue.config.productionTip = false
 
@@ -29,6 +29,50 @@ var winSize = function() {
 
     return { width: e[a + 'Width'], height: e[a + 'Height'] };
 };
+
+// v-loadmore: 用于在element-ui的select下拉框加上滚动到底事件监听vscrollbar
+Vue.directive('vscrollbar', {
+    bind(el, binding, vnode) {
+        // 获取element-ui定义好的scroll盒子
+        const SELECTWRAP_DOM = el.querySelector('.el-table__body-wrapper');
+        console.log(SELECTWRAP_DOM);
+        SELECTWRAP_DOM.addEventListener('scroll', function() {
+
+            /*
+             * scrollHeight 获取元素内容高度(只读)
+             * scrollTop 获取或者设置元素的偏移值,常用于, 计算滚动条的位置, 当一个元素的容器没有产生垂直方向的滚动条, 那它的scrollTop的值默认为0.
+             * clientHeight 读取元素的可见高度(只读)
+             * 如果元素滚动到底, 下面等式返回true, 没有则返回false:
+             * ele.scrollHeight - ele.scrollTop === ele.clientHeight;
+             */
+
+            // const CONDITION = ((this.scrollHeight - this.scrollTop === this.clientHeight) &&
+            //this.scrollTop > sign) 
+            // 注意: && this.scrollTop
+            //console.log("scrollHeight:" + this.scrollHeight + " clientHeight：" + this.clientHeight + " scrollTop:" + this.scrollTop);
+            if (this.scrollTop == 0) {
+                // console.log('到顶了')
+                binding.value('Top');
+            }
+            if (this.scrollTop == (this.scrollHeight - this.clientHeight)) {
+                // console.log('到底了')
+                binding.value('Bottom');
+            }
+            // if (this.scrollTop > sign) {
+            //     sign = this.scrollTop;
+            //     console.log('向下')
+            // }
+            // if (this.scrollTop < sign) {
+            //     sign = this.scrollTop;
+            //     console.log('向上')
+            // }
+            // console.log(CONDITION)
+            // if (CONDITION) {
+            //     binding.value();
+            // }
+        });
+    }
+})
 
 new Vue({
     el: '#app',

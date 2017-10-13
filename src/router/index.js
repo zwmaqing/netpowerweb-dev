@@ -34,6 +34,10 @@ const router = new Router({
                     component: resolve => require(['../components/pages/Groups.vue'], resolve)
                 },
                 {
+                    path: '/groups-info',
+                    component: resolve => require(['../components/pages/Speak.vue'], resolve)
+                },
+                {
                     path: '/speak',
                     component: resolve => require(['../components/pages/Speak.vue'], resolve)
                 },

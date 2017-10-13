@@ -8,10 +8,10 @@
                     <el-table-column width="80" property="TimeSpan" label="时长"></el-table-column>
                 </el-table>
             </el-popover>
-            <el-popover ref="popvolumeadj" placement="top" width="300" trigger="click" >
+            <el-popover ref="popvolumeadj" placement="top" width="260" trigger="click" >
                 <div style="">
                     <!-- <mt-range v-model="currentProject.Volume"></mt-range> -->
-                    <el-slider v-model="currentProject.Volume" show-input :step="1"  @change="valumchange"></el-slider>
+                    <el-slider v-model="currentProject.Volume"  @change="valumchange"></el-slider>
                 </div>
             </el-popover>
             
@@ -59,7 +59,7 @@
             <div class="musicnameFlag">
                 <span style="" v-show="isPcDev">{{currentProject.FileName}}</span>
             </div>
-            <el-slider v-model="currentProject.PlayPercent" :disabled="!isTaskRuning" @input="percentinput" @change="playPercentchange"></el-slider>
+            <el-slider v-model="currentProject.PlayPercent" :disabled="!isTaskRuning" @input="percentinput" @change="playPercentchange" ></el-slider>
         </div>
         <!-- <audio preload ref="myAudio" :src="audioUrl" @ended="_next()"></audio> -->
         <!-- <transition name="fold">

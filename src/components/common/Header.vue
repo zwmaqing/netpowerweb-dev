@@ -13,7 +13,7 @@
                 </el-dropdown>
             </div>
 
-    <el-menu theme="dark"  class="el-menu-demo" mode="horizontal" router v-show="isMobileDev">
+    <el-menu  class="el-menu-demo" mode="horizontal" background-color="#545c64" text-color="#fff" active-text-color="#ffd04b" router v-show="isMobileDev">
         <el-submenu index="1">
             <template slot="title">播放管理</template>
             <el-menu-item index="tasks">定时播放</el-menu-item>
