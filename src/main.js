@@ -5,6 +5,9 @@ import App from './App'
 import router from './router'
 import store from './store'
 import ElementUI from 'element-ui';
+import { Range } from 'mint-ui';
+
+Vue.component(Range.name, Range);
 
 // import Mint from 'mint-ui';
 // Vue.use(Mint);
@@ -30,12 +33,44 @@ var winSize = function() {
     return { width: e[a + 'Width'], height: e[a + 'Height'] };
 };
 
+// 格式为 yyyy-MM-dd hh:mm:ss
+Date.prototype.format = function(format) {
+    var args = {
+        "M+": this.getMonth() + 1,
+        "d+": this.getDate(),
+        "h+": this.getHours(),
+        "m+": this.getMinutes(),
+        "s+": this.getSeconds(),
+        "q+": Math.floor((this.getMonth() + 3) / 3), //quarter
+        "S": this.getMilliseconds()
+    };
+    if (/(y+)/.test(format))
+        format = format.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+    for (var i in args) {
+        var n = args[i];
+        if (new RegExp("(" + i + ")").test(format))
+            format = format.replace(RegExp.$1, RegExp.$1.length == 1 ? n : ("00" + n).substr(("" + n).length));
+    }
+    return format;
+};
+
+Array.prototype.contains = function (obj) {
+  var i = this.length;
+  while (i--) {
+    if (this[i] === obj) {
+      return true;
+    }
+  }
+  return false;
+}
+
+
 // v-loadmore: 用于在element-ui的select下拉框加上滚动到底事件监听vscrollbar
 Vue.directive('vscrollbar', {
     bind(el, binding, vnode) {
         // 获取element-ui定义好的scroll盒子
         const SELECTWRAP_DOM = el.querySelector('.el-table__body-wrapper');
-        console.log(SELECTWRAP_DOM);
+        // console.log(SELECTWRAP_DOM);
         SELECTWRAP_DOM.addEventListener('scroll', function() {
 
             /*
@@ -80,7 +115,7 @@ new Vue({
     store,
     methods: {
         ...mapActions([
-            'setWidth', 'setHeight', 'setSys_Width', 'setSys_Height'
+            'setWidth', 'setHeight', 'setSys_Width', 'setSys_Height', 'setFastDivHeight'
         ]),
         ...mapMutations(['SET_WIDTH', 'SET_HEIGHT', 'SET_SYS_WIDTH', 'SET_SYS_HEIGHT'])
     },
@@ -109,6 +144,8 @@ new Vue({
                 //modules system Mutations
                 that.SET_SYS_WIDTH(winSize().width);
                 that.SET_SYS_HEIGHT(winSize().height);
+
+
             }()
         }
     },

@@ -8,7 +8,7 @@ axios.defaults.baseURL = 'http://192.168.10.189';
 
 // 创建实例时设置配置的默认值
 var instance = axios.create({
-    baseURL: 'http://192.168.10.106'
+    baseURL: 'http://192.168.10.117'
 });
 
 // http请求拦截器

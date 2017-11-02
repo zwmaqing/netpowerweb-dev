@@ -1,6 +1,6 @@
 <template>
     <div class="header">
-        <div class="logo" v-show="isPcDev">播放服务器-管理系统</div>
+        <div class="logo" v-show="isPcDev">播放服务器-管理系统 {{dateStr}}</div>
             <div class="user-info"  v-show="isPcDev">
                 <el-dropdown trigger="click" @command="handleCommand">
                     <span class="el-dropdown-link">
@@ -8,7 +8,7 @@
                     </span>
                     <el-dropdown-menu slot="dropdown">
                         <el-dropdown-item command="loginout">
-                            <i class="el-icon-delete"></i> 退出</el-dropdown-item>
+                            <i class="el-icon-upload2"></i> 退出</el-dropdown-item>
                     </el-dropdown-menu>
                 </el-dropdown>
             </div>
@@ -50,7 +50,19 @@ export default {
             tokenStr: 'tokenStr',
             isMobileDev: 'isMobileDev',
             isPcDev: 'isPcDev'
-        })
+        }),
+        dateStr(){
+            var d = new Date()
+            var weekday = new Array(7)
+            weekday[0] = "星期天"
+            weekday[1] = "星期一"
+            weekday[2] = "星期二"
+            weekday[3] = "星期三"
+            weekday[4] = "星期四"
+            weekday[5] = "星期五"
+            weekday[6] = "星期六"
+            return weekday[d.getDay()];
+        }
     },
     methods: {
         ...mapMutations([
@@ -109,7 +121,7 @@ export default {
 
 .header .logo {
     float: left;
-    width: 250px;
+    width: 300px;
     text-align: center;
 }
 

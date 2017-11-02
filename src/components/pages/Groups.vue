@@ -1,14 +1,14 @@
 <template>
     <div class="full">
         <div id="left" v-bind:class="{ 'split-horizon': isPcDev, 'full': isMobileDev }" v-show="!isMobileGroupInfo">
-            <el-table :data="groupData" style="width: 100%" :height="groupListHeighX" @row-click="rowClick" v-vscrollbar="taskLoadMore">
+            <el-table :data="groupData" style="width: 100%" :height="groupListHeighX" v-loading="isGroupLoading" @row-click="rowClick" v-vscrollbar="groupLoadMore">
                 <el-table-column label="分组名">
-                    <template scope="scope">
+                    <template slot-scope="scope">
                         <span style="margin-left: 0px">{{ scope.row.GroupName }}</span>
                     </template>
                 </el-table-column>
                 <el-table-column label="操作" width="176">
-                    <template scope="scope">
+                    <template slot-scope="scope">
                         <el-button size="small" type="info" icon="el-icon-success" @click="openOrCloseGroup(scope.row)">打开</el-button>
                         <el-button size="small" icon="el-icon-edit" @click="editGroup(scope.row)">编辑</el-button>
                         <el-button size="small" type="danger" icon="el-icon-delete" @click="deleteGroup(scope.row)">删除</el-button>
@@ -26,13 +26,13 @@
         </div>
         <div id="right" class="split-horizon backg" v-bind:class="{'full': isMobileGroupInfo }" v-show="isPcDev||isMobileGroupInfo">
             <div class="groupNameIn">
-                <el-form :inline="true" :model="theGroup" ref="theGroup" label-width="120px">
+                <el-form :inline="true" :model="theGroup" ref="theGroup" label-width="100px">
                     <el-form-item label="输出分组名:" prop="GroupName" :rules="[
-                              { required: true, message: '名称不能为空'}]">
+                                  { required: true, message: '名称不能为空'}]">
                         <el-input type="GroupName" v-model="theGroup.GroupName" placeholder="分组名称" :disabled="isEditDisabled"></el-input>
                     </el-form-item>
                     <el-form-item label="包含的分区:" prop="ChannelList" :rules="[
-                              { required: true, message: '不能不配置分区'}]">
+                                  { required: true, message: '不能不配置分区'}]">
                         <el-select v-model="theGroup.ChannelList" multiple placeholder="请选择输出分区" :disabled="isEditDisabled">
                             <el-option v-for="item in sysChannls" :key="item.ChannelID" :label="item.ChannelID" :value="item.ChannelID">
                             </el-option>
@@ -73,6 +73,7 @@ export default {
             isTaskRuning: true,
             playing: false,
             playStatus: 'playing',
+            isGroupLoading: false,
             groupCount: 2,
             groupData:
             [
@@ -190,11 +191,10 @@ export default {
     methods: {
         addGroup() {
             this.isAddGroup = true;
-            this.theGroup =this.getNewGroup();
+            this.theGroup = this.getNewGroup();
             this.isEditDisabled = false;
             if (this.isMobileDev) {
                 this.isMobileGroupInfo = true
-
             }
         },
         rowClick(row, event, column) {
@@ -217,7 +217,6 @@ export default {
             this.isEditDisabled = false;
             if (this.isMobileDev) {
                 this.isMobileGroupInfo = true
-
             }
         },
         deleteGroup(row) {
@@ -243,13 +242,17 @@ export default {
                 Status: false
             }
         },
-        taskLoadMore(loction) {
+        groupLoadMore(loction) {
             // 表格到底后执行  这里写你要做的事
             if (loction == 'Bottom') {
-                this.$message({
-                    message: '滚动到' + loction + '了',
-                    type: 'success'
-                });
+                this.isGroupLoading = true;//显示加载loading
+                let self = this;
+                if (self && !self._isDestroyed) {
+                    setTimeout(() => {
+                        if (self && !self._isDestroyed)
+                            self.isGroupLoading = false;//关闭加载loading
+                    }, 2000);
+                }
             }
         },
         submitForm(formName) {
@@ -266,7 +269,7 @@ export default {
                             ChannelList: this.theGroup.ChannelList,
                             Status: false
                         });
-                    }else{
+                    } else {
                         //Edit
                     }
 
@@ -300,7 +303,7 @@ export default {
 
 </script>
 
-<style>
+<style lang="scss" scoped>
 .split-horizon {
     position: relative;
     float: left;
@@ -319,24 +322,21 @@ export default {
 
 .groupNameIn {
     padding: 10px 5px;
+    .el-form--inline {
+        width: 347px;
+    }
 }
 
-.el-input__inner {
-    width: 217px;
-}
 
-.el-form--inline {
-    width: 347px;
-}
-
-.el-button+.el-button {
-    margin-left: 0px;
-}
-
-.el-button--small {
-    padding: 10px 4px;
-    font-size: 12px;
-    border-radius: 3px;
+.cell {
+    .el-button+.el-button {
+        margin-left: 0px;
+    }
+    .el-button--small {
+        padding: 10px 4px;
+        font-size: 12px;
+        border-radius: 3px;
+    }
 }
 
 .suspension-bar {

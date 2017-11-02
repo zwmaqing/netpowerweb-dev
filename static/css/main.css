@@ -28,7 +28,7 @@ a {
     top: 3.125em;
     bottom: 3.75em;
     width: auto;
-    padding: 0.3125em;
+    padding: 0.15em;
     box-sizing: border-box;
     /*overflow-y: scroll;*/
 }
@@ -65,9 +65,34 @@ a {
     padding-right: 5px;
 }
 
-.el-table tr:hover {
-    background: #f6faff;
+tr.el-table__row.task-runing {
+    background: turquoise;
 }
+
+tr.el-table__row.task-invalid {
+    background: silver;
+}
+
+.form-item-full .el-form-item__content {
+    display: inline;
+}
+
+.week-group .el-checkbox-button__inner {
+    padding: 10px 4px;
+}
+
+.model-group .el-checkbox-button__inner {
+    padding: 10px 4px;
+}
+
+
+/* .taskInfoInput .el-form-item {
+    width: 100%;
+}
+
+.el-form-item .el-form-item__content {
+    width: 100%;
+} */
 
 .mgb20 {
     margin-bottom: 20px;
