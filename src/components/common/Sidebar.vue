@@ -18,7 +18,7 @@
             </el-submenu>
             <el-submenu index="4">
                 <template slot="title">
-                    <i class="el-icon-setting"></i>系统设置</template>
+                    <i class="el-icon-setting"></i>设备管理</template>
                 <el-menu-item index="settings">基础配置</el-menu-item>
                 <el-menu-item index="eqadjust">音频EQ平衡</el-menu-item>
                 <el-menu-item index="microphone">话筒管理</el-menu-item>
