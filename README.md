@@ -27,4 +27,10 @@ npm run e2e
 npm test
 ```
 
-For detailed explanation on how things work, checkout the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
+工作计划
+1、实现Setting 项目的动态组件定义与加载；
+2、设计EQ调节界面的设计；
+3、实现分班播报功能界面的设计；
+4、对UI架构重新优化，rem统一尺寸改造，flex布局优化，控件尺寸对齐，自适应尺寸等；
+5、实现分部功能对接与调试；
+

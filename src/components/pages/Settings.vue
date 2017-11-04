@@ -96,6 +96,8 @@ export default {
   methods: {
     _selectSetting(item, index) {
       console.log("selectSetting : " + item.name+" index: "+index);
+      //get select setting pro data
+      
     }
   },
   watch: {}
