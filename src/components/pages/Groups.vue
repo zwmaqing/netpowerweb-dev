@@ -311,11 +311,6 @@ export default {
     height: 100%;
 }
 
-.full {
-    width: 100%;
-    height: 100%;
-}
-
 .backg {
     background-color: #f8f8ff;
 }

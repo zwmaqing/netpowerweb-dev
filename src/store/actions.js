@@ -10,5 +10,8 @@ export default {
     },
     setLogin({ commit }, isLogin) {
         commit(types.SET_ISLOGIN, isLogin)
+    },
+    setPath({commit},path){
+        commit(types.SET_PATH,path)
     }
 }

@@ -308,8 +308,9 @@ export default {
   // align-content:center;
   //justify-content: center;
   //order: -1;
-  position: fixed;
-  top: 250px;
+    position: absolute;
+    bottom: 6px;
+    right: 6px;
   z-index: 9999;
   font-size: 0;
 }

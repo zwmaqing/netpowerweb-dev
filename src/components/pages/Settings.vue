@@ -1,8 +1,8 @@
 <template>
   <div class="Grid">
-    <div id="left" class="u-1of40" >
+    <div id="left" class="u-1of40" v-show="!isShowSetEdit">
       <div class="setting-list">
-          <!-- 还需要增加滚动条 -->
+        <!-- 还需要增加滚动条 -->
         <div class="list-item" v-for="(item, index) in settingsPro">
           <div class="avatar icon16" v-bind:class="[item.icon]"></div>
           <div class="info" @click="_selectSetting(item,index)">
@@ -11,11 +11,21 @@
         </div>
       </div>
     </div>
-    <div id="right" v-bind:class="{'u-1of60':isPcDev,'u-1of1':isMobileDev}" v-show="isPcDev||isShowFilesPathDiv">
+    <div id="right" v-bind:class="{'u-1of60':isPcDev,'u-1of1':isMobileDev}" v-show="isPcDev||isShowSetEdit">
+      <component v-bind:is="currentView">
+        <!-- 组件在 vm.currentview 变化时改变！ -->
+      </component>
       <div class="suspension-bar" v-show="isMobileDev">
         <button class="button button-royal button-circle">
           <el-tooltip class="item" effect="dark" content="点击返回" placement="top">
             <i class="icon24 icon-folder-open"></i>
+          </el-tooltip>
+        </button>
+      </div>
+      <div class="suspension-bar">
+        <button class="button button-royal button-circle" @click="returnSettings">
+          <el-tooltip class="item" effect="dark" content="点击返回" placement="top">
+            <i class="icon24 icon-arrow-left"></i>
           </el-tooltip>
         </button>
       </div>
@@ -26,15 +36,31 @@
 
 <script>
 import Vue from "vue";
-import { mapGetters } from "vuex";
-
+import { mapGetters, mapActions } from "vuex";
 import api from "../../api/index";
 
+import systemStorage from "../common/sysStorage";
+import sysNetwork from "../common/sysNetwork";
+import sysDateTime from "../common/sysDateTime";
+import sysFastButton from "../common/sysFastButton";
+import sysPowerControl from "../common/sysPowerControl";
+import sysAlarm from "../common/sysAlarm";
+import sysAbout from "../common/sysAbout";
+
 export default {
-  components: {},
+  components: {
+    systemStorage,
+    sysNetwork,
+    sysDateTime,
+    sysFastButton,
+    sysAlarm,
+    sysPowerControl,
+    sysAbout
+  },
   data() {
     return {
-      isShowFilesPathDiv: false,
+      isShowSetEdit: false,
+      currentView: "",
       settingsPro: [
         {
           name: "设备存储",
@@ -52,17 +78,17 @@ export default {
           icon: "icon-clock-o"
         },
         {
-          name: "快捷键功能配置",
+          name: "快捷键功能",
           path: "",
           icon: "icon-hand-o-up"
         },
         {
-          name: "报警联动配置",
+          name: "应急报警联动",
           path: "",
           icon: "icon-whatsapp"
         },
         {
-          name: "音频条件配置",
+          name: "音频工作条件",
           path: "",
           icon: "icon-cogs"
         },
@@ -90,17 +116,58 @@ export default {
       screenHeight: "screenHeight",
       isMobileDev: "isMobileDev",
       isPcDev: "isPcDev",
-      isLogin: "isLogin"
+      isLogin: "isLogin",
+      path: "path"
     })
   },
   methods: {
+    ...mapActions(["setPath"]),
     _selectSetting(item, index) {
-      console.log("selectSetting : " + item.name+" index: "+index);
+      // console.log("selectSetting : " + item.name + " index: " + index);
       //get select setting pro data
-      
+      if (this.isMobileDev) {
+        this.isShowSetEdit = true;
+      }
+      switch (index) {
+        case 0: {
+          this.currentView = "systemStorage";
+          break;
+        }
+        case 1: {
+          this.currentView = "sysNetwork";
+          break;
+        }
+        case 2: {
+          this.currentView = "sysDateTime";
+          break;
+        }
+        case 3: {
+          this.currentView = "sysFastButton";
+          break;
+        }
+        case 4: {
+          this.currentView = "sysAlarm";
+          break;
+        }
+        case 6: {
+          this.currentView = "sysPowerControl";
+          break;
+        }
+        case 8: {
+          this.currentView = "sysAbout";
+          break;
+        }
+      }
+    },
+    returnSettings() {
+      this.isShowSetEdit = false;
     }
   },
-  watch: {}
+  watch: {},
+  created() {
+    //组件创建完后
+    this.setPath("settings");
+  }
 };
 </script>
 
@@ -117,6 +184,7 @@ export default {
     border: 1px solid;
     border-color: gainsboro;
     position: relative;
+    overflow: auto;
   }
   .u-1of60 {
     display: flex;
@@ -185,13 +253,11 @@ export default {
   .suspension-bar {
     width: 40px;
     height: 40px;
-    //align-self: flex-start;
-    // align-content:center;
-    //justify-content: center;
-    //order: -1;
-    position: fixed;
-    top: 250px;
-    z-index: 9999;
+
+    position: absolute;
+    bottom: 6px;
+    right: 6px;
+    z-index: 100;
     font-size: 0;
   }
 }

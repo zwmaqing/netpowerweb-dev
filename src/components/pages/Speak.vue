@@ -70,222 +70,237 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
-import api from '../../api'
-import * as _ from '../../util/tools'//
-import Vue from 'vue'
+import { mapGetters, mapActions } from "vuex";
+import api from "../../api";
+import * as _ from "../../util/tools"; //
+import Vue from "vue";
 
 export default {
-    components: {
-
-    },
-    data() {
-        return {
-            isTaskRuning: true,
-            playing: false,
-            playStatus: 'playing',
-            groupData:
-            [
-                {
-                    GroupID: 100,
-                    GroupName: "全部喇叭",
-                    ChannelList: ["CH01", "CH02", "CH03", "CH04", "CH05", "CH06", "CH07", "CH08", "CH09", "CH10", "CH11", "CH12", "CH13", "CH14", "CH15", "CH16"],
-                    Status: false
-                },
-                {
-                    GroupID: 101,
-                    GroupName: "操场喇叭",
-                    ChannelList: ["CH01", "CH02"],
-                    Status: false
-                },
-                {
-                    GroupID: 102,
-                    GroupName: "操场喇叭",
-                    ChannelList: ["CH01", "CH02"],
-                    Status: false
-                },
-                {
-                    GroupID: 103,
-                    GroupName: "操场喇叭",
-                    ChannelList: ["CH01", "CH02"],
-                    Status: false
-                },
-                {
-                    GroupID: 104,
-                    GroupName: "操场喇叭",
-                    ChannelList: ["CH01", "CH02"],
-                    Status: false
-                }
-            ],
-            roles: [{
-                value: 'women',
-                label: '成年女声'
-            }, {
-                value: 'man',
-                label: '成年男士',
-                disabled: true
-            },
-            {
-                value: 'girl',
-                label: '童声女孩',
-                disabled: true
-            }
-            ],
-            speakData: {
-                speakContent: '',
-                role: 'women',
-                speech: 12,
-                volume: 12,
-                groupList: []
-            },
-            fastbuttons: [
-                {
-                    label: '快捷按键1',
-                    butID: '102',
-                    groupList: [102, 103],
-                    txt: '放学准备1'
-                },
-                {
-                    label: '快捷按键2',
-                    butID: '103',
-                    groupList: [102, 103],
-                    txt: '放学准备2'
-                },
-                {
-                    label: '快捷按键3',
-                    butID: '104',
-                    groupList: [102, 103],
-                    txt: '放学准备3'
-                },
-                {
-                    label: '快捷按键4',
-                    butID: '105',
-                    groupList: [102, 103],
-                    txt: '放学准备4'
-                },
-                {
-                    label: '快捷按键1',
-                    butID: '102',
-                    groupList: [102, 103],
-                    txt: '放学准备1'
-                }
-            ],
-            spaekHistory:[
-                {
-                    logID:1,
-                    groupList: [102, 103],
-                    txt: '各班老师，请于下午2点到会议室开会'
-                },
-                {
-                    logID: 2,
-                    groupList: [102, 103],
-                    txt: '各班老师，请于下午2点到会议室开会'
-                }
-            ]
+  components: {},
+  data() {
+    return {
+      isTaskRuning: true,
+      playing: false,
+      playStatus: "playing",
+      groupData: [
+        {
+          GroupID: 100,
+          GroupName: "全部喇叭",
+          ChannelList: [
+            "CH01",
+            "CH02",
+            "CH03",
+            "CH04",
+            "CH05",
+            "CH06",
+            "CH07",
+            "CH08",
+            "CH09",
+            "CH10",
+            "CH11",
+            "CH12",
+            "CH13",
+            "CH14",
+            "CH15",
+            "CH16"
+          ],
+          Status: false
+        },
+        {
+          GroupID: 101,
+          GroupName: "操场喇叭",
+          ChannelList: ["CH01", "CH02"],
+          Status: false
+        },
+        {
+          GroupID: 102,
+          GroupName: "操场喇叭",
+          ChannelList: ["CH01", "CH02"],
+          Status: false
+        },
+        {
+          GroupID: 103,
+          GroupName: "操场喇叭",
+          ChannelList: ["CH01", "CH02"],
+          Status: false
+        },
+        {
+          GroupID: 104,
+          GroupName: "操场喇叭",
+          ChannelList: ["CH01", "CH02"],
+          Status: false
         }
-    },
-    computed: {
-        ...mapGetters({
-            screenWidth: 'screenWidth',
-            screenHeight: 'screenHeight',
-            isMobileDev: 'isMobileDev',
-            isPcDev: 'isPcDev',
-            isLogin: 'isLogin'
-        })
-    },
-    mounted() {
-        
-    },
-    methods: {
-        collectQuickSpeak() {
-            this.$message({
-                showClose: true,
-                message: '收藏到快捷播报成功.',
-                type: 'success'
-            });
+      ],
+      roles: [
+        {
+          value: "women",
+          label: "成年女声"
         },
-        speakInputTxt() {
-            this.$message({
-                showClose: true,
-                message: '播报请求已成功提交.',
-                type: 'success'
-            });
+        {
+          value: "man",
+          label: "成年男士",
+          disabled: true
         },
-        fastSpaekButton(but) {
-            this.$message({
-                showClose: true,
-                message: '播报请求: ' + but.txt,
-                type: 'success'
-            });
+        {
+          value: "girl",
+          label: "童声女孩",
+          disabled: true
+        }
+      ],
+      speakData: {
+        speakContent: "",
+        role: "women",
+        speech: 12,
+        volume: 12,
+        groupList: []
+      },
+      fastbuttons: [
+        {
+          label: "快捷按键1",
+          butID: "102",
+          groupList: [102, 103],
+          txt: "放学准备1"
         },
-        rowClick(row, event, column) {
-            // if (column.label == '分组名') {
-            //     this.getSelectRowData(row);
-            //     this.isEditDisabled = true;
-             }
+        {
+          label: "快捷按键2",
+          butID: "103",
+          groupList: [102, 103],
+          txt: "放学准备2"
+        },
+        {
+          label: "快捷按键3",
+          butID: "104",
+          groupList: [102, 103],
+          txt: "放学准备3"
+        },
+        {
+          label: "快捷按键4",
+          butID: "105",
+          groupList: [102, 103],
+          txt: "放学准备4"
+        },
+        {
+          label: "快捷按键1",
+          butID: "102",
+          groupList: [102, 103],
+          txt: "放学准备1"
+        }
+      ],
+      spaekHistory: [
+        {
+          logID: 1,
+          groupList: [102, 103],
+          txt: "各班老师，请于下午2点到会议室开会"
+        },
+        {
+          logID: 2,
+          groupList: [102, 103],
+          txt: "各班老师，请于下午2点到会议室开会"
+        }
+      ]
+    };
+  },
+  computed: {
+    ...mapGetters({
+      screenWidth: "screenWidth",
+      screenHeight: "screenHeight",
+      isMobileDev: "isMobileDev",
+      isPcDev: "isPcDev",
+      isLogin: "isLogin"
+    })
+  },
+  mounted() {},
+  methods: {
+    ...mapActions(["setPath"]),
+    collectQuickSpeak() {
+      this.$message({
+        showClose: true,
+        message: "收藏到快捷播报成功.",
+        type: "success"
+      });
     },
-    watch: {
-
+    speakInputTxt() {
+      this.$message({
+        showClose: true,
+        message: "播报请求已成功提交.",
+        type: "success"
+      });
+    },
+    fastSpaekButton(but) {
+      this.$message({
+        showClose: true,
+        message: "播报请求: " + but.txt,
+        type: "success"
+      });
+    },
+    rowClick(row, event, column) {
+      // if (column.label == '分组名') {
+      // this.getSelectRowData(row);
+      // this.isEditDisabled = true;
     }
-}
-
+  },
+  watch: {},
+  created() {
+    //组件创建完后
+    //在此触发隐藏Playbar  显示Speak按钮
+    this.setPath('speak');
+    //console.log("in to speak");
+  }
+};
 </script>
 
 <style lang="scss" scoped>
-
 .Grid {
-    display: -webkit-flex;
+  display: -webkit-flex;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  .Grid-cell.u-1of2 {
     display: flex;
-    width: 100%;
-    height: 100%;
-    .Grid-cell.u-1of2 {
-        display: flex;
-        flex: 0 0 50%;
-        flex-direction: column;
-    }
-    .Grid-cell.u-1of1 {
-        display: flex;
-        flex: 0 0 100%;
-        flex-direction: column;
-    }
+    flex: 0 0 50%;
+    flex-direction: column;
+  }
+  .Grid-cell.u-1of1 {
+    display: flex;
+    flex: 0 0 100%;
+    flex-direction: column;
+  }
 }
 
 #spaekIn {
-    .el-form-item {
-        margin-bottom: 12px;
-    }
+  .el-form-item {
+    margin-bottom: 12px;
+  }
 }
 
 #fastSpaek {
-    background-color: #f8f8ff;
-    position: relative;
-    flex: 1;
-    overflow: auto;
+  background-color: #f8f8ff;
+  position: relative;
+  flex: 1;
+  overflow: auto;
 }
 
 #styleDefW .el-select {
-    width: 100%;
+  width: 100%;
 }
 
-
 #styleDefW1 .el-select {
-    width: 70%;
+  width: 70%;
 }
 
 #fastSpaek .el-button {
-    margin: 4px 1px;
-    padding: 8px 10px;
+  margin: 4px 1px;
+  padding: 8px 10px;
 }
 
 .cell {
-    .el-button+.el-button {
-        margin-left: 0px;
-    }
-    .el-button--small {
-        padding: 10px 4px;
-        font-size: 12px;
-        border-radius: 3px;
-    }
+  .el-button + .el-button {
+    margin-left: 0px;
+  }
+  .el-button--small {
+    padding: 10px 4px;
+    font-size: 12px;
+    border-radius: 3px;
+  }
 }
-
 </style>

@@ -20,7 +20,8 @@ const state = {
     isMobileDev: false,
     userName: cookieUserName,
     isLogin: cookieUserToken != null && cookieUserToken.length > 6,
-    tokenStr: cookieUserToken
+    tokenStr: cookieUserToken,
+    phth:''
 }
 export default new Vuex.Store({
     state,

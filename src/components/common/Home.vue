@@ -36,12 +36,8 @@ export default {
 </script>
 
 <style>
-@media(max-width:768px) {
-    .content {
-        left: 0em;
-    }
-}
 .contentMobile {
+    left: 0em;
     bottom: 2.75em;
     }
 
