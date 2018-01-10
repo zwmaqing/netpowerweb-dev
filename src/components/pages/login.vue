@@ -2,7 +2,7 @@
     <div class="login-wrap">
         <!-- <img class="user-logo" src="../../static/img/zwSound-d.png"> -->
         <div class="ms-title">
-            播放服务器-管理系统</div>
+            播放服务器-管理系统-Dev</div>
         <div class="ms-login">
             <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="0px" class="demo-ruleForm">
                 <el-form-item prop="userName">
@@ -51,7 +51,6 @@ export default {
           // localStorage.setItem('ms_username', self.ruleForm.username);
           this._login();
         } else {
-          console.log("error submit!!");
           return false;
         }
       });
@@ -62,18 +61,17 @@ export default {
         userName: this.ruleForm.userName,
         password: this.ruleForm.password
       };
-//
-      {
-        this.SET_USERNAME(data.userName);
-        this.setLogin(true);
-        this.SET_TOKENSTR("yrfghnbfghfhr55");
-        _.setCookie("User_Login_Token", "yrfghnbfghfhr55");
-        _.setCookie("User_Login_Name", data.userName);
-        this.$router.push("/tasks"); //进入主页
-        return
-      }
+      // {
+      //   this.SET_USERNAME(data.userName);
+      //   this.setLogin(true);
+      //   this.SET_TOKENSTR("yrfghnbfghfhr55");
+      //   _.setCookie("User_Login_Token", "yrfghnbfghfhr55");
+      //   _.setCookie("User_Login_Name", data.userName);
+      //   this.$router.push("/tasks"); //进入主页
+      //   return
+      // }
       // this.$store.dispatch('setLoadingState', true)
-      //console.log('name:'+data.userName+'pass'+data.password);
+      // console.log('name:'+data.userName+'pass'+data.password);
       api
         .System(data)
         .then(res => {

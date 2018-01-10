@@ -1,36 +1,35 @@
 <template>
   <div class="Grid">
-    <div id="left" class="u-1of40" v-show="isPcDev||isShowFilesPathDiv">
-      <el-tree :props="props1" :load="loadNode1" highlight-current lazy accordion @node-click="resourcesNodeClick">
+    <div id="left" class="u-1of40" v-show="isPcDev||isShowFilesPathDiv" v-swipeleft="swipLift">
+      <el-tree :props="props1" :load="loadNodeLocal" highlight-current lazy accordion @node-click="resourcesNodeClick" :render-content="renderContent">
       </el-tree>
-      <el-tree :props="props1" :load="loadNode1" lazy accordion highlight-current @node-click="resourcesNodeClick" :render-content="renderContent">
+      <el-tree :props="props1" :load="loadNodeFromNet" lazy accordion highlight-current @node-click="resourcesNodeClick">
       </el-tree>
-        <div class="suspension-bar" v-show="isMobileDev">
-        <button class="button button-royal button-circle"  @click="showFilesPathDiv(false)">
+      <div class="suspension-bar" v-show="isMobileDev">
+        <button class="button button-royal button-circle" @click="showFilesPathDiv(false)">
           <el-tooltip class="item" effect="dark" content="点击返回文件列表" placement="top">
             <i class="icon24 icon-arrow-circle-left"></i>
           </el-tooltip>
         </button>
       </div>
     </div>
-    <div id="right" v-bind:class="{'u-1of60':isPcDev,'u-1of1':isMobileDev}" v-show="!isShowFilesPathDiv">
-      <div class="music-list">
+    <div id="right" v-bind:class="{'u-1of60':isPcDev,'u-1of1':isMobileDev}" v-show="isPcDev||!isShowFilesPathDiv" v-vscrollbar="filesLoadMore">
+      <div class="music-list" id="files-list" v-swipeup="{fn:vuetap,name:'上滑'}" v-swiperight="swipRight">
         <div class="list-item" v-for="(item, index) in musicLists">
           <div class="avatar icon16 icon-music" @click="_selectFile(item,index)"></div>
           <div class="info" @click="_selectFile(item,index)">
-            <div class="music-name">{{item.name}}</div>
+            <div class="music-name">{{item.Name}}</div>
             <!-- <div class="music-s"
                      v-if="item.ar">{{item.ar[0].name}}</div>
                 <div class="music-s"
                      v-else>{{item.artists[0].name}}</div>
                 <div class="music-hot"
                      v-show="item.hot"><i class="icon">&#xe650;</i>{{item.hot}}</div> -->
-
           </div>
           <div class="operation" @click="_showOperation(index)">
             <i class="el-icon-more"></i>
           </div>
-          <animation-menu :item="item" :index="index"></animation-menu>
+          <animation-menu :item="item" :index="index" :task="editTask" :path="currentPath"></animation-menu>
         </div>
       </div>
       <div class="suspension-bar" v-show="isMobileDev">
@@ -50,8 +49,7 @@
 import animationMenu from "../common/animationMenu";
 
 import Vue from "vue";
-import { mapGetters } from "vuex";
-
+import { mapGetters, mapActions, mapMutations } from "vuex";
 import api from "../../api/index";
 
 export default {
@@ -60,38 +58,17 @@ export default {
   },
   data() {
     return {
-      musicLists: [
-        {
-          name: "刚好遇见你-中反复大概的.mp3",
-          menuShow: false
-        },
-        {
-          name: "暧昧",
-          menuShow: false
-        },
-        {
-          name: "刚好遇见你-中反复大概的.mp3",
-          menuShow: false
-        },
-        {
-          name: "刚好遇见你-中反复大概的.mp3",
-          menuShow: false
-        },
-        {
-          name: "暧昧",
-          menuShow: false
-        },
-        {
-          name: "刚好遇见你-中反复大概的.mp3",
-          menuShow: false
-        }
-      ],
+      currentPath: "",
+      currentFilesTotal: 0,
+      pageIndex: 0,
+      musicLists: [],
       props1: {
         label: "name",
         children: "zones",
         isLeaf: "leaf"
       },
-      isShowFilesPathDiv: false
+      isShowFilesPathDiv: false,
+      editTask: {}
     };
   },
   computed: {
@@ -99,40 +76,17 @@ export default {
       screenWidth: "screenWidth",
       screenHeight: "screenHeight",
       isMobileDev: "isMobileDev",
+      tokenStr: "tokenStr",
       isPcDev: "isPcDev",
       isLogin: "isLogin"
     })
     // ...mapGetters(["listenLists", "showLoading"])
   },
   methods: {
+    ...mapActions(["setTaskList", "getTasks", "isReloginToDev"]),
+    ...mapMutations(["SET_DEVCOMMBUSY"]),
     _selectFile(music, index) {
       this._showOperation(index);
-
-      //   this.$store.dispatch("setPlaying", false);
-      //   this.$store.dispatch("setAudio", music);
-      //   this.$store.dispatch("setShowPlayLoading", true);
-      //   //查找试听列表中有没有点击中的歌
-      //   let x = this.listenLists.findIndex(item => {
-      //     //判断是否是搜索列表里的(搜索结果字段不一样)
-      //     if (item.ar && music.ar) {
-      //       return item.name == music.name && item.ar[0].name == music.ar[0].name;
-      //     } else if (item.artists && music.artists) {
-      //       return (
-      //         item.name == music.name &&
-      //         item.artists[0].name == music.artists[0].name
-      //       );
-      //     }
-      //   });
-      //   if (x === -1) {
-      //     this.$store.dispatch("addListenLists", music);
-      //   }
-      //   if (music.mp3Url) {
-      //     this.$store.dispatch("setAudioUrl", music.mp3Url);
-      //   } else {
-      //     api.MusicUrl(music.id).then(res => {
-      //       this.$store.dispatch("setAudioUrl", res.data[0].url);
-      //     });
-      //   }
     },
     _showOperation(index) {
       for (let i = 0; i < this.musicLists.length; i++) {
@@ -142,7 +96,7 @@ export default {
       }
       this.musicLists[index].menuShow = !this.musicLists[index].menuShow;
     },
-    loadNode1(node, resolve) {
+    loadNodeLocal(node, resolve) {
       if (node.level === 0) {
         return resolve([
           { name: "设备本地播放资源", zones: "resources", filesCount: 0 }
@@ -153,48 +107,140 @@ export default {
           const data = [
             {
               name: "内部存储器",
-              zones: "0\\resources",
+              zones: "1:",
               filesCount: 0,
-              label: "0\\resources"
+              label: "1:"
             },
             {
               name: "USB可移动存储器",
-              zones: "1\\music",
-              filesCount: 16,
-              label: "1\\music"
+              zones: "2:",
+              filesCount: 0,
+              label: "2:"
             }
           ];
-
           resolve(data);
         }, 500);
       }
 
       if (node.level > 1) {
-        // getChildNodesData(node.data.zones);//获取子目录节点数据
-        // if (node.data.zones === "0\\resources")
-        {
+        let data = {
+          CMD: "GetDirs",
+          Path: node.data.zones,
+          Token: this.tokenStr
+        };
+        api.File(data).then(res => {
+          res.$router = this.$router; //是否需要重新登录检查
+          this.isReloginToDev(res);
+          if (res.Status && res.Data.length > 1) {
+            node.data.filesCount = res.Data[0].FileNum;
+            res.Data.splice(0, 1);
+            for (let index = 0; index < res.Data.length; index++) {
+              let i = res.Data[index].DirName.lastIndexOf("/");
+              res.Data[index].name = res.Data[index].DirName.substr(i + 1);
+              res.Data[index].zones = res.Data[index].DirName;
+              res.Data[index].leaf = false;
+              res.Data[index].filesCount = res.Data[index].FileNum;
+              res.Data[index].label = res.Data[index].DirName;
+            }
+          } else {
+            node.data.leaf = true;
+            node.data.filesCount =
+              res.Data.length > 0 ? res.Data[0].FileNum : 0;
+            res.Data = [];
+          }
+          resolve(res.Data);
+        });
+        //
+      }
+    },
+    loadNodeFromNet(node, resolve) {
+      if (node.level === 0) {
+        return resolve([{ name: "网络播放资源", zones: "resources", filesCount: 0 }]);
+      }
+      if (node.level === 1) {
+        setTimeout(() => {
           const data = [
             {
-              name: "儿童音乐资源",
-              zones: "0\\resources\\music",
-              leaf: true,
-              filesCount: 22,
-              label: "0\\resources\\music"
+              name: "云存储空间",
+              zones: "1:",
+              filesCount: 0,
+              label: "1:"
             },
             {
-              name: "性格与习惯养成故事",
-              zones: "0\\resources\\story",
-              leaf: true,
-              filesCount: 25,
-              label: "0\\resources\\story"
+              name: "酷狗音乐空间",
+              zones: "2:",
+              filesCount: 0,
+              label: "2:"
+            },
+            {
+              name: "故事订阅频道",
+              zones: "3:",
+              filesCount: 0,
+              label: "3:"
             }
           ];
           resolve(data);
-        }
+        }, 500);
+      }
+      if (node.level > 1) {
+        node.data.leaf = true;
+        resolve([]);
+        this.$message({
+          message: "尚未配置资源地址，需要先配置网络资源空间服务器地址!",
+          type: "warning"
+        });
       }
     },
+    resourcesNodeNetClick(data, node) {
+      this.$message({
+        message: "尚未配置资源地址，需要先配置网络资源空间服务器地址!",
+        type: "warning"
+      });
+    },
     resourcesNodeClick(data, node) {
-      console.log("path to : " + data.zones);
+      // console.log("path to : " + data.zones + " filesCount:" + data.filesCount);
+      this.currentFilesTotal = data.filesCount;
+      this.currentPath = data.zones;
+      if (data.filesCount < 1) {
+        this.musicLists = [];
+        return;
+      }
+      this.loadFilesFromDev("0-15");
+      //容器大于1第一分页的项目，再加一页以充满容器
+      if (this.getMusicListCapacity() > 16) {
+        setTimeout(() => {
+          this.filesLoadMore("Bottom");
+        }, 2500);
+      }
+      this.isShowFilesPathDiv = false;
+    },
+    filesLoadMore(loction) {
+      // 表格到底后执行  这里写你要做的事
+      if (loction == "Bottom") {
+        this.pageIndex++;
+        if (this.currentFilesTotal < this.pageIndex * 16 + 1) {
+          return;
+        }
+        let range =
+          (this.pageIndex * 16).toString() +
+          "-" +
+          ((this.pageIndex + 1) * 16 - 1).toString();
+        //console.log("load more files range:" + range);
+        this.loadFilesFromDev(range, true); //Add
+      }
+    },
+    getMusicListCapacity() {
+      let listHeight = this.screenHeight - (this.isPcDev ? 117 : 101);
+      return parseInt(listHeight / 43);
+    },
+    vuetap: function(s) {
+      this.filesLoadMore("Bottom");
+    },
+    swipRight: function(s) {
+      this.isShowFilesPathDiv = true;
+    },
+    swipLift: function(s) {
+      this.isShowFilesPathDiv = false;
     },
     renderContent(h, { node, data, store }) {
       return (
@@ -210,6 +256,35 @@ export default {
       } else {
         this.isShowFilesPathDiv = false;
       }
+    },
+    loadFilesFromDev(range, isAdd) {
+      this.SET_DEVCOMMBUSY(true);
+      let params = {
+        CMD: "GetFiles",
+        Path: this.currentPath,
+        IndexRange: range,
+        Token: this.tokenStr
+      };
+      api.File(params).then(res => {
+        res.$router = this.$router; //是否需要重新登录检查
+        this.isReloginToDev(res);
+        if (res.Status && res.Data.length > 0) {
+          for (let index = 0; index < res.Data.length; index++) {
+            res.Data[index].menuShow = false;
+            if (isAdd) {
+              this.musicLists.push(res.Data[index]);
+            }
+          }
+          if (!isAdd) {
+            this.musicLists = res.Data;
+          }
+        } else {
+          if (!isAdd) {
+            this.musicLists = [];
+          }
+        }
+        this.SET_DEVCOMMBUSY(false);
+      });
     }
   },
   watch: {
@@ -218,6 +293,13 @@ export default {
         Vue.set(item, "menuShow", false);
       }
     }
+  },
+  created() {
+    this.editTask = this.$route.query;
+
+   // this.getTasks({ range: "0-15" });
+
+    this.isShowFilesPathDiv = true;
   }
 };
 </script>
@@ -235,6 +317,7 @@ export default {
     border: 1px solid;
     border-color: gainsboro;
     position: relative;
+    overflow: auto;
   }
   .u-1of60 {
     display: flex;
@@ -242,12 +325,14 @@ export default {
     flex-direction: column;
     border: 1px solid;
     border-color: gainsboro;
+    overflow: auto;
   }
   .u-1of1 {
     flex: 1 1 100%;
     border: 1px solid;
     border-color: gainsboro;
     display: flex;
+    overflow: auto;
   }
 }
 
@@ -258,11 +343,11 @@ export default {
     position: relative;
     height: 2.6em;
     border-bottom: 1px solid #3c3662;
-    background: #28224e;
+    //background: #28224e;
     display: flex;
     align-items: center;
     cursor: pointer;
-    color: #fff;
+    //color: #fff;
     &:last-child {
       border-bottom: none;
     }
@@ -308,22 +393,10 @@ export default {
   // align-content:center;
   //justify-content: center;
   //order: -1;
-    position: absolute;
-    bottom: 6px;
-    right: 6px;
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
   z-index: 9999;
   font-size: 0;
-}
-
-@media screen and(min-width: 769px) {
-  .list-item {
-    .info {
-      .music-hot {
-        .icon {
-          font-size: 14px !important;
-        }
-      }
-    }
-  }
 }
 </style>

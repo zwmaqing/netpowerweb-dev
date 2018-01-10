@@ -1,7 +1,7 @@
 <template>
   <div class="Grid">
     <div id="left" v-bind:class="{'u-1of40':isPcDev,'u-1of1':isMobileDev}" v-show="!isShowTaskEdit">
-      <el-table :data="taskList" :row-class-name="taskStatueClass" :height="taskListHeighX" @row-click="rowClick" v-loading="isTaskLoading"
+      <el-table :data="tasks" :row-class-name="taskStatueClass" :height="taskListHeighX" @row-click="rowClick" v-loading="isTaskLoading"
         v-vscrollbar="taskLoadMore">
         <el-table-column label="定时播放任务">
           <template slot-scope="scope">
@@ -32,7 +32,7 @@
         </span>
       </el-dialog>
     </div>
-    <div id="right" v-bind:class="{'u-1of60':isPcDev,'u-1of1':isMobileDev}" v-show="isPcDev||isShowTaskEdit">
+    <div id="right" v-bind:class="{'u-1of60':isPcDev,'u-1of1':isMobileDev}" v-show="isPcDev||isShowTaskEdit" v-swiperight="swipRight">
       <div class="taskInfoInput">
         <div class="row">
           <div class="column p20">
@@ -80,7 +80,7 @@
           </div>
           <div class="p80" v-bind:class="{ 'miPadding': isMobileDev }">
             <el-checkbox-group v-model="theTaskData.Week" size="small" :disabled="isEditDisabled">
-              <el-checkbox-button v-for="week in weeks" :label="week.key" :key="week.key">{{week.label}}</el-checkbox-button>
+              <el-checkbox-button v-for="week in weekOptions" :label="week.key" :key="week.key">{{week.label}}</el-checkbox-button>
             </el-checkbox-group>
           </div>
         </div>
@@ -90,7 +90,8 @@
           </div>
           <div class="column p35">
             <el-badge :value="taskGroupCount" class="item">
-            <el-button type="success" size="small" class="icon16 icon-bullhorn" :disabled="isEditDisabled"> 选择区域</el-button>
+              <el-button type="success" size="small" class="icon16 icon-bullhorn" @click="isShowSelectGroup=true" :disabled="isEditDisabled">
+                选择区域</el-button>
             </el-badge>
           </div>
           <div class="column p45 center" style="font-size: 14px;">
@@ -119,7 +120,7 @@
         <el-table :data="theTaskProjects" :height="projectListHeight" v-loading="isProjectLoading" v-vscrollbar="projectLoadMore">
           <el-table-column label="项目音乐文件名">
             <template slot-scope="scope">
-              <span style="margin-left: 0px">{{ scope.row.FileName}}</span>
+              <span style="margin-left: 0px">{{ scope.row.Name}}</span>
             </template>
           </el-table-column>
           <el-table-column label="操作" width="130">
@@ -138,48 +139,20 @@
           </button>
         </div>
       </div>
+      <el-dialog title="选择收听区域" :visible.sync="isShowSelectGroup" width="80%">
+        <el-checkbox-group v-model="theTaskData.GroupList">
+          <el-checkbox v-for="item in allChannalsGroups" :key="item.GroupID" :label="item.GroupID">{{item.GroupName}}</el-checkbox>
+        </el-checkbox-group>
+      </el-dialog>
     </div>
   </div>
 </template>
 
-
-
 <script>
-import { mapGetters } from "vuex";
+import { mapGetters, mapActions, mapMutations } from "vuex";
 import api from "../../api";
 import * as _ from "../../util/tools"; //
 import Vue from "vue";
-
-const weekOptions = [
-  {
-    label: "星期一",
-    key: 1
-  },
-  {
-    label: "星期二",
-    key: 2
-  },
-  {
-    label: "星期三",
-    key: 3
-  },
-  {
-    label: "星期四",
-    key: 4
-  },
-  {
-    label: "星期五",
-    key: 5
-  },
-  {
-    label: "星期六",
-    key: 6
-  },
-  {
-    label: "星期日",
-    key: 0
-  }
-];
 
 export default {
   components: {},
@@ -192,86 +165,10 @@ export default {
       dialogVisible: false,
       isEditDisabled: true,
       isAddNewTask: false, //可以考虑取消，通过theTask 的TaskID为0判断
-      weeks: weekOptions,
       isProjectLoading: false,
       isShowTaskEdit: false,
-      taskList: [
-        {
-          TaskID: 100,
-          TaskName: "全部音乐",
-          TaskType: "Music",
-          StartTime: "",
-          TimeSpan: "",
-          Week: [],
-          StartVolume: 60,
-          EndVolume: 60,
-          Projects: -1,
-          PlayModel: "Order",
-          GroupList: [100],
-          Status: "Stop",
-          IsSystem: true
-        },
-        {
-          TaskID: 101,
-          TaskName: "早操音乐",
-          TaskType: "Music",
-          StartTime: "09:10:00",
-          TimeSpan: "00:10:00",
-          Week: [1, 2, 3, 4, 5],
-          StartVolume: 75,
-          EndVolume: 75,
-          Projects: 3,
-          PlayModel: "Order",
-          GroupList: [101],
-          Status: "Stop",
-          IsSystem: false
-        },
-        {
-          TaskID: 102,
-          TaskName: "午餐音乐",
-          TaskType: "Music",
-          StartTime: "11:10:00",
-          TimeSpan: "00:10:00",
-          Week: [1, 2, 3, 4, 5],
-          StartVolume: 60,
-          EndVolume: 70,
-          Projects: 3,
-          PlayModel: "Order",
-          GroupList: [102, 103, 104],
-          Status: "Stop",
-          IsSystem: false
-        },
-        {
-          TaskID: 103,
-          TaskName: "午睡音乐",
-          TaskType: "Music",
-          StartTime: "12:10:00",
-          TimeSpan: "00:10:00",
-          Week: [1, 2, 3, 4, 5],
-          StartVolume: 70,
-          EndVolume: 40,
-          Projects: 3,
-          PlayModel: "Order",
-          GroupList: [102, 103, 104],
-          Status: "Runing",
-          IsSystem: false
-        },
-        {
-          TaskID: 104,
-          TaskName: "起床音乐",
-          TaskType: "Music",
-          StartTime: "14:10:00",
-          TimeSpan: "00:10:00",
-          Week: [1, 2, 3, 4, 5],
-          StartVolume: 40,
-          EndVolume: 70,
-          Projects: 3,
-          PlayModel: "Random",
-          GroupList: [102, 103, 104],
-          Status: "Stop",
-          IsSystem: false
-        }
-      ],
+      isShowSelectGroup: false,
+      checkList: [],
       theTaskData: {
         TaskID: 0,
         TaskName: "",
@@ -288,72 +185,8 @@ export default {
         Status: "Stop",
         IsSystem: false
       },
-      theTaskProjects: [
-        {
-          FileIndex: 1,
-          FileName: "爸爸妈妈我爱你们1.mp3",
-          TimeSpan: "00:03:12"
-        },
-        {
-          FileIndex: 2,
-          FileName: "爸爸妈妈我爱你们2.mp3",
-          TimeSpan: "00:03:12"
-        },
-        {
-          FileIndex: 3,
-          FileName: "爸爸妈妈我爱你们3.mp3",
-          TimeSpan: "00:03:12"
-        }
-      ],
-      groupData: [
-        {
-          GroupID: 100,
-          GroupName: "全部喇叭",
-          ChannelList: [
-            "CH01",
-            "CH02",
-            "CH03",
-            "CH04",
-            "CH05",
-            "CH06",
-            "CH07",
-            "CH08",
-            "CH09",
-            "CH10",
-            "CH11",
-            "CH12",
-            "CH13",
-            "CH14",
-            "CH15",
-            "CH16"
-          ],
-          Status: false
-        },
-        {
-          GroupID: 101,
-          GroupName: "操场喇叭",
-          ChannelList: ["CH01", "CH02"],
-          Status: false
-        },
-        {
-          GroupID: 102,
-          GroupName: "大班喇叭",
-          ChannelList: ["CH01", "CH02"],
-          Status: false
-        },
-        {
-          GroupID: 103,
-          GroupName: "中班喇叭",
-          ChannelList: ["CH01", "CH02"],
-          Status: false
-        },
-        {
-          GroupID: 104,
-          GroupName: "小班喇叭",
-          ChannelList: ["CH01", "CH02"],
-          Status: false
-        }
-      ]
+      theTaskProjects: [],
+      taskProPageIndex: 0
     };
   },
   computed: {
@@ -362,7 +195,15 @@ export default {
       screenHeight: "screenHeight",
       isMobileDev: "isMobileDev",
       isPcDev: "isPcDev",
-      isLogin: "isLogin"
+      isLogin: "isLogin",
+      tokenStr: "tokenStr",
+      weekOptions: "weekOptions",
+      tasks: "tasks",
+      taskTotal: "taskTotal",
+      taskPageIndex: "taskPageIndex",
+      isTaskRefresh: "isTaskRefresh",
+      groups: "groups",
+      channals: "channals"
     }),
     taskListHeighX() {
       let height = this.screenHeight - 117;
@@ -389,41 +230,69 @@ export default {
       }
     },
     isPlayProjectDisabled() {
-      return !(this.theTaskData.Status === "Runing");
+      return !(this.theTaskData.Status === "Running");
     },
-    taskGroupCount(){
-      return this.theTaskData.GroupList.length
+    taskGroupCount() {
+      return this.theTaskData.GroupList.length;
+    },
+    allChannalsGroups() {
+      let allChannalsGroups = [];
+      this.channals.forEach(function(value, index, array) {
+        let one = {};
+        one.GroupID = value.ChannelID;
+        one.GroupName = value.ChannelName;
+        allChannalsGroups.push(one);
+      });
+      this.groups.forEach(function(value, index, array) {
+        let one = {};
+        one.GroupID = value.GroupID;
+        one.GroupName = value.GroupName;
+        allChannalsGroups.push(one);
+      });
+      return allChannalsGroups;
     }
   },
-  mounted() {},
+  mounted() {
+    this.SET_DEVCOMMBUSY(false);
+  },
   methods: {
+    ...mapActions([
+      "setTaskList",
+      "getTasks",
+      "getTasksTotal",
+      "getGroups",
+      "getChannals",
+      "strtTask",
+      "endRuningTask",
+      "delOneTaskForBuff",
+      "isReloginToDev",
+      "taskStateRefresh"
+    ]),
+    ...mapMutations([
+      "SET_ISTASKREFRESH",
+      "SET_TASKSPAGEINDEX",
+      "SET_DEVCOMMBUSY"
+    ]),
     taskStatueClass(ro, index) {
       let row = ro.row;
       var d = new Date();
       d.getDay();
-      //console.log(row.row);
-      // if (row == undefined||row.Week==undefined) {
-      //   return
-      // }
       if (!row.Week.contains(d.getDay())) {
         return "task-invalid";
       }
-      if (row.Status == "Runing") {
+      if (row.Status == "Running" || row.Status == "Pause") {
         return "task-runing";
       }
     },
     starButtIcon(row) {
-      if (row.Status == "Runing") {
+      if (row.Status == "Running" || row.Status == "Pause") {
         return "el-icon-loading";
       } else {
         return "el-icon-caret-right";
       }
     },
     starButtType(row) {
-      // if (row == undefined || row.Week == undefined) {
-      //   return
-      // }
-      if (row.Status == "Runing") {
+      if (row.Status == "Running" || row.Status == "Pause") {
         return "primary";
       }
       var d = new Date();
@@ -442,6 +311,19 @@ export default {
             message: "开始时间:" + row.StartTime + "  时长:" + row.TimeSpan,
             type: "success"
           });
+        }
+        //PC load pro
+        if (this.isPcDev) {
+          this.loardTaskProject("1-16");
+          if (
+            this.getProListCapacity() > 16 &&
+            this.theTaskData.Projects > 16
+          ) {
+            setTimeout(() => {
+              this.loardTaskProject("17-32");
+              //this.projectLoadMore("Bottom");
+            }, 2500);
+          }
         }
       }
     },
@@ -512,6 +394,7 @@ export default {
       this.isAddNewTask = true;
       this.theTaskData = this.getNewTask();
       this.isEditDisabled = false;
+      this.theTaskProjects = [];
       if (this.isMobileDev) {
         this.isShowTaskEdit = true;
       }
@@ -519,10 +402,11 @@ export default {
     startOrStopTask(row) {
       this.getSelectTaskData(row);
       switch (row.Status) {
-        case "Runing": {
+        case "Running": {
           //实际停止操作
-          row.Status = "Stop";
+          this.endRuningTask();
           this.theTaskData.Status = "Stop";
+          this.SET_ISTASKREFRESH(true);
           break;
         }
         case "Stop": {
@@ -532,8 +416,9 @@ export default {
             this.dialogVisible = true;
           } else {
             //实际启动操作
-            row.Status = "Runing";
-            this.theTaskData.Status = "Runing";
+            this.strtTask(this.theTaskData.TaskID);
+            this.theTaskData.Status = "Running";
+            this.SET_ISTASKREFRESH(true);
           }
           break;
         }
@@ -544,18 +429,23 @@ export default {
     },
     editTask(row) {
       this.getSelectTaskData(row);
-      if (this.theTaskData.IsSystem) {
+      let message = this.theTaskData.IsSystem ? "系统默认任务不能编辑修改." : "";
+      message =
+        this.theTaskData.Status == "Runing" ? "任务正在执行,不能编辑修改,请停止后更改." : message;
+      if (this.theTaskData.IsSystem || this.theTaskData.Status == "Runing") {
         this.$message({
-          message: "系统默认任务不能编辑修改",
+          message: message,
           type: "warning"
         });
         return;
-      } else {
-        this.isEditDisabled = false;
-        if (this.isMobileDev) {
-          this.isShowTaskEdit = true;
-        }
       }
+      this.isEditDisabled = false;
+      if (this.isMobileDev) {
+        this.isShowTaskEdit = true;
+      }
+    },
+    swipRight: function(s) {
+      this.returnTask();
     },
     delTask(row) {
       if (row.IsSystem) {
@@ -564,121 +454,298 @@ export default {
           type: "warning"
         });
         return;
-      } else {
-        this.$confirm("此操作将永久删除该任务, 是否继续?", "提示", {
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
-          type: "warning"
-        })
-          .then(() => {
-            this.$message({
-              type: "success",
-              message: "删除成功!"
-            });
-            console.log("Del task:" + row.TaskName);
-          })
-          .catch(() => {
-            this.$message({
-              type: "info",
-              message: "已取消删除"
-            });
-          });
       }
+
+      this.$confirm("此操作将永久删除该任务, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          let params = {
+            CMD: "DelTask",
+            TaskID: row.TaskID,
+            Token: this.tokenStr
+          };
+          api.Task(params).then(res => {
+            res.$router = this.$router; //是否需要重新登录检查
+            this.isReloginToDev(res);
+            if (res.Status) {
+              //移除此任务
+              this.delOneTaskForBuff(row.TaskID);
+              this.theTaskData = this.getNewTask();
+            } else {
+              this.$message({
+                message: "删除该任务失败！请检查后重试。",
+                type: "warning"
+              });
+            }
+          });
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消删除"
+          });
+        });
     },
     returnTask() {
       if (this.isMobileDev) {
         this.isShowTaskEdit = false;
       }
     },
+    getTaskListCapacity() {
+      return parseInt((this.taskListHeighX - 28) / 39);
+    },
     taskLoadMore(loction) {
       // 表格到底后执行  这里写你要做的事
       if (loction == "Bottom") {
-        this.isTaskLoading = true; //显示加载loading
+        this.SET_TASKSPAGEINDEX(this.taskPageIndex + 1);
+        //this.isTaskLoading = true; //显示加载loading
+        if (this.taskTotal < this.taskPageIndex * 16 + 1) {
+          return;
+        }
+        let range =
+          (this.taskPageIndex * 16).toString() +
+          "-" +
+          ((this.taskPageIndex + 1) * 16 - 1).toString();
         let self = this;
         if (self && !self._isDestroyed) {
-          setTimeout(() => {
-            if (self && !self._isDestroyed) self.isTaskLoading = false; //关闭加载loading
-          }, 2000);
+          this.getTasks({ range: range, isAdd: true });
         }
       }
     },
     confirmClose(operatType) {
       if (operatType == "startOrStopTask") {
         switch (this.theTaskData.Status) {
-          case "Runing": {
+          case "Running": {
             //实际停止操作
             this.theTaskData.Status = "Stop";
             this.$message({
               showClose: true,
-              message: "任务：" + this.theTaskData.TaskName + "启动停止.",
+              message: "任务：" + this.theTaskData.TaskName + "停止.",
               type: "success"
             });
             break;
           }
           case "Stop": {
             //实际启动操作
-            this.theTaskData.Status = "Runing";
-            this.$message({
-              showClose: true,
-              message: "任务：" + this.theTaskData.TaskName + "启动成功.",
-              type: "success"
-            });
+            this.strtTask(this.theTaskData.TaskID);
+            this.theTaskData.Status = "Running";
             break;
           }
           default: {
             break;
           }
         }
+        this.SET_ISTASKREFRESH(true);
       }
       this.dialogVisible = false;
     },
+    setTaskState(state) {},
     taskInfoSave(state) {
       if (state) {
+        if (this.theTaskData.TaskName == "") {
+          this.$message({
+            message: "警告哦，必须输入任务名称!",
+            type: "warning"
+          });
+          return;
+        }
+        if (this.theTaskData.Week.length < 1) {
+          this.$message({
+            message: "警告哦，至少需要现在一个有效的周日!",
+            type: "warning"
+          });
+          return;
+        }
+        if (this.theTaskData.GroupList.length < 1) {
+          this.$message({
+            message: "警告哦，至少需要现在一个输出分区或分组!",
+            type: "warning"
+          });
+          return;
+        }
+
+        let timeSpanMS =
+          this.theTaskData.TimeValue[1].getTime() -
+          this.theTaskData.TimeValue[0].getTime();
+        //计算出相差天数
+        let days = Math.floor(timeSpanMS / (24 * 3600 * 1000));
+
+        //计算出小时数
+        let leave1 = timeSpanMS % (24 * 3600 * 1000); //计算天数后剩余的毫秒数
+        let hours = Math.floor(leave1 / (3600 * 1000));
+        //计算相差分钟数
+        let leave2 = leave1 % (3600 * 1000); //计算小时数后剩余的毫秒数
+        let minutes = Math.floor(leave2 / (60 * 1000));
+        //计算相差秒数
+        let leave3 = leave2 % (60 * 1000); //计算分钟数后剩余的毫秒数
+        let seconds = Math.round(leave3 / 1000);
+
+        let params = {
+          CMD: this.isAddNewTask ? "AddTask" : "EditTask",
+          TaskID: this.isAddNewTask ? 0 : this.theTaskData.TaskID,
+          TaskName: this.theTaskData.TaskName,
+          TaskType: this.theTaskData.TaskType,
+          IsSystem: false,
+          PlayModel: this.theTaskData.PlayModel,
+          StartTime: this.theTaskData.TimeValue[0].format("hh:mm:ss"),
+          TimeSpan: hours + ":" + minutes + ":" + seconds,
+          Week: _.arrayToStrUnderInterval(this.theTaskData.Week),
+          Volume:
+            this.theTaskData.StartVolume + "-" + this.theTaskData.EndVolume,
+          Groups: _.arrayToStrUnderInterval(this.theTaskData.GroupList),
+          Token: this.tokenStr
+        };
+
+        api.Task(params).then(res => {
+          res.$router = this.$router;
+          this.isReloginToDev(res);
+          this.$message({
+            showClose: true,
+            message: "保存定时任务" + (res.Status ? "成功." : "失败!请检查后重试."),
+            type: res.Status ? "success" : "warning"
+          });
+          //成功状态
+          if (res.Status) {
+            this.isEditDisabled = true;
+            this.isAddNewTask = false;
+            this.getTasksTotal();
+            this.getTasks({ range: "1-12" });
+            if (this.getTaskListCapacity() > 12 && this.taskTotal > 12) {
+              setTimeout(() => {
+                this.getTasks({ range: "13-24", isAdd: true });
+              }, 2500);
+            }
+
+            this.theTaskData = this.getNewTask();
+          }
+        });
       } else {
+        this.isEditDisabled = true;
+        this.isAddNewTask = false;
       }
-      this.isEditDisabled = true;
+    },
+    getProListCapacity() {
+      return parseInt((this.projectListHeight - 28) / 39);
     },
     playTheProject(row) {
-      this.$message({
-        showClose: true,
-        message: "播放 " + this.theTaskData.TaskName + " 的 " + row.FileName,
-        type: "success"
+      let params = {
+        CMD: "PlaySpecify",
+        ProIndex: row.Index,
+        Token: this.tokenStr
+      };
+      api.Task(params).then(res => {
+        res.$router = this.$router; //是否需要重新登录检查
+        this.isReloginToDev(res);
+        if (res.Status) {
+          this.SET_ISTASKREFRESH(true);
+        }
       });
     },
     delTheProject(row) {
-      this.$message({
-        showClose: true,
-        message: "删除 " + this.theTaskData.TaskName + " 的 " + row.FileName,
-        type: "success"
+      let params = {
+        CMD: "DelTaskProject",
+        TaskID: this.theTaskData.TaskID,
+        ProIndex: row.Index,
+        Token: this.tokenStr
+      };
+
+      api.Task(params).then(res => {
+        res.$router = this.$router;
+        this.isReloginToDev(res);
+        this.$message({
+          showClose: true,
+          message: "删除任务项目" + (res.Status ? "成功." : "失败!请检查后重试."),
+          type: res.Status ? "success" : "warning"
+        });
       });
     },
     addProjectToTask() {
       if (this.theTaskData.TaskID < 1) {
-        console.log(
-          "The basic information of the new task must be stored first"
-        );
+        this.$message({
+          message: "警告哦，添加项目前需要保存新建任务配置",
+          type: "warning"
+        });
         return;
       }
-      this.$message({
-        showClose: true,
-        message: "添加项目到 " + this.theTaskData.TaskName,
-        type: "success"
+      //配置参数
+      this.$router.push({
+        path: "/files",
+        query: {
+          taskID: this.theTaskData.TaskID,
+          taskName: this.theTaskData.TaskName
+        }
+      });
+    },
+    loardTaskProject(range, isAdd) {
+      let params = {
+        CMD: "GetTaskProjects",
+        TaskID: this.theTaskData.TaskID,
+        Range: range,
+        Token: this.tokenStr
+      };
+      api.Task(params).then(res => {
+        res.$router = this.$router; //是否需要重新登录检查
+        this.isReloginToDev(res);
+        if (res.Status) {
+          for (let index = 0; index < res.Data.length; index++) {
+            if (isAdd) {
+              this.theTaskProjects.push(res.Data[index]);
+            }
+          }
+          if (!isAdd) {
+            this.theTaskProjects = res.Data;
+          }
+        } else {
+          if (!isAdd) {
+            this.theTaskProjects = [];
+          }
+          this.$message({
+            message: "获取任务项目文件列表失败,请检查后重试.",
+            type: "warning"
+          });
+        }
       });
     },
     projectLoadMore(loction) {
       // 表格到底后执行  这里写你要做的事
       if (loction == "Bottom") {
-        this.isProjectLoading = true; //显示加载loading
+        this.taskProPageIndex++;
+        if (this.theTaskData.Projects < this.taskProPageIndex * 16 + 1) {
+          return;
+        }
+        let range =
+          (this.taskProPageIndex * 16 + 1).toString() +
+          "-" +
+          ((this.taskProPageIndex + 1) * 16).toString();
+
+        //this.isProjectLoading = true; //显示加载loading
         let self = this;
         if (self && !self._isDestroyed) {
-          setTimeout(() => {
-            if (self && !self._isDestroyed) self.isProjectLoading = false; //关闭加载loading
-          }, 2000);
+          this.loardTaskProject(range, true);
+          // setTimeout(() => {
+          //   if (self && !self._isDestroyed) self.isProjectLoading = false; //关闭加载loading
+          // }, 1500);
         }
       }
     }
   },
-  watch: {}
+  watch: {},
+  created() {
+    this.SET_DEVCOMMBUSY(true);
+    //this.getGroupsTotal();
+    this.getTasksTotal();
+    this.getTasks({ range: "1-12" });
+    if (this.getTaskListCapacity() > 12 && this.taskTotal > 12) {
+      setTimeout(() => {
+        this.getTasks({ range: "13-24", isAdd: true });
+      }, 2500);
+    }
+    this.getGroups("1-16"); //需要完善分页请求
+    this.getChannals();
+  }
 };
 </script>
 

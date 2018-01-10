@@ -20,7 +20,7 @@
       <div class="name">开关分区分组</div>
       <div class="veluem">
         <el-select v-model="fastButton3.group" placeholder="请选择分组">
-          <el-option v-for="item in groupData" :key="item.GroupID" :label="item.GroupName" :value="item.GroupID">
+          <el-option v-for="item in groups" :key="item.GroupID" :label="item.GroupName" :value="item.GroupID">
           </el-option>
         </el-select>
       </div>
@@ -42,7 +42,7 @@
       <div class="name">开关分区分组</div>
       <div class="veluem">
         <el-select v-model="fastButton4.group" placeholder="请选择分组">
-          <el-option v-for="item in groupData" :key="item.GroupID" :label="item.GroupName" :value="item.GroupID">
+          <el-option v-for="item in groups" :key="item.GroupID" :label="item.GroupName" :value="item.GroupID">
           </el-option>
         </el-select>
       </div>
@@ -62,11 +62,9 @@
   </div>
 </template>
 
-
-
 <script>
 import Vue from "vue";
-import { mapGetters } from "vuex";
+import { mapGetters, mapActions} from "vuex";
 import api from "../../api/index";
 
 export default {
@@ -80,31 +78,73 @@ export default {
         group: null,
         speakTxt: ""
       },
-      groupData: [
-        {
-          GroupID: 100,
-          GroupName: "全部喇叭",
-          Status: false
-        },
-        {
-          GroupID: 101,
-          GroupName: "操场喇叭",
-          Status: false
-        }
-      ]
+      fastButtonSet: []
     };
   },
   computed: {
     ...mapGetters({
-      isLogin: "isLogin"
+      isLogin: "isLogin",
+      tokenStr: "tokenStr",
+      groups: "groups"
     })
   },
   methods: {
+     ...mapActions(["getGroupsTotal", "getGroups", "getChannals"]),
+    getfastButtonSet() {
+      let data = {
+        CMD: "GetButton",
+        Token: this.tokenStr
+      };
+      api.System(data).then(res => {
+        this.fastButtonSet = res.Data;
+        if (res.Data[2] != undefined) {
+          this.fastButton3.group = res.Data[2].buttChannel;
+          this.fastButton3.speakTxt = res.Data[2].buttContent;
+        }
+        if (res.Data[3] != undefined) {
+          this.fastButton4.group = res.Data[3].buttChannel;
+          this.fastButton4.speakTxt = res.Data[3].buttContent;
+        }
+      });
+    },
     saveFastButton(butt) {
-      console.log("Save fastbutton " + butt + " set to device.");
+      // ButtonFuction 3
+      let data = {
+        CMD: "SetButton",
+        ButtonID: 3,
+        Method: 3,
+        Channels: this.fastButton3.group,
+        Content: this.fastButton3.speakTxt,
+        Token: this.tokenStr
+      };
+      if (butt == 4) {
+        data.ButtonID = 4;
+        data.Channels = this.fastButton4.group;
+        data.Content = this.fastButton4.speakTxt;
+      }
+      api.System(data).then(res => {
+        this.fastButtonSet = res.Data;
+        if (res.Status) {
+          this.$message({
+            showClose: true,
+            message: "快捷功能键配置更改成功！",
+            type: "success"
+          });
+        } else {
+          this.$message({
+            message: "快捷功能键配置更改失败！请检查后重试。",
+            type: "warning"
+          });
+        }
+      });
+      //console.log("Save fastbutton " + butt + " set to device.");
     }
   },
-  watch: {}
+  watch: {},
+  mounted: function() {
+    this.getGroups("0-15"); //需要完善分页请求
+    this.getfastButtonSet();
+  }
 };
 </script>
 

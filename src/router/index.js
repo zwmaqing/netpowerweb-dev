@@ -4,6 +4,7 @@ import Login from '@/components/pages/login.vue'
 import * as _ from '@/util/tools'
 Vue.use(Router)
 
+
 const router = new Router({
   routes: [{
       path: '/',
@@ -72,7 +73,10 @@ router.beforeEach((to, from, next) => {
     //console.log(cookie);
     if (cookie != null && cookie.length > 6) { // 判断是否登录
       next()
-    } else { // 没登录则跳转到登录界面
+    } else { 
+      // 没登录则跳转到登录界面
+      // console.log(cookie+" To login!");
+      // alert("to login");
       next({
         path: '/login'
       })
@@ -81,5 +85,8 @@ router.beforeEach((to, from, next) => {
     next()
   }
 })
+
+
+
 
 export default router

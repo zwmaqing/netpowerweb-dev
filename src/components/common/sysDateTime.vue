@@ -1,10 +1,10 @@
 <template>
   <div class="grig">
     <div class="row">
-      <div class="column p60">自动确定日期和时间</div>
+      <div class="column p60">自动同步网络时间</div>
       <div class="column p40">
-        <el-switch style="display: block" v-model="isSyncNetDatetime" active-color="#13ce66" inactive-color="#ff4949" active-text="ON"
-          inactive-text="OFF">
+        <el-switch style="display: block" v-model="isSyncNetDatetime" active-color="#13ce66" inactive-color="#ff4949" active-text="是"
+          inactive-text="否" @change="syncTimeModeChange">
         </el-switch>
       </div>
     </div>
@@ -16,8 +16,8 @@
         </el-date-picker>
       </div>
       <div class="column p30">
-        <el-tooltip class="item" effect="dark" content="同步为电脑时间" placement="left">
-          <el-button type="primary" icon="el-icon-refresh" :disabled="isSyncNetDatetime">同步</el-button>
+        <el-tooltip class="item" effect="dark" content="获取客户端时间" placement="left">
+          <el-button type="primary" icon="el-icon-refresh" :disabled="isSyncNetDatetime" @click="getClientTime">获取</el-button>
         </el-tooltip>
       </div>
     </div>
@@ -29,7 +29,7 @@
       </div>
       <div class="column p30">
         <el-tooltip class="item" effect="dark" content="保存时间到设备" placement="left">
-          <el-button type="primary" icon="el-icon-success" :disabled="isSyncNetDatetime">保存</el-button>
+          <el-button type="primary" icon="el-icon-success" :disabled="isSyncNetDatetime" @click="setDevTime">保存</el-button>
         </el-tooltip>
       </div>
     </div>
@@ -56,11 +56,72 @@ export default {
   },
   computed: {
     ...mapGetters({
-      isLogin: "isLogin"
+      isLogin: "isLogin",
+      tokenStr: "tokenStr"
     })
   },
-  methods: {},
-  watch: {}
+  methods: {
+    getDevTime() {
+      let data = {
+        CMD: "GetDevTime",
+        Token: this.tokenStr
+      };
+      api.System(data).then(res => {
+        this.isSyncNetDatetime = res.Data.TimeNetSYNC;
+        this.devDate = res.Data.DevDate;
+        this.devTime = res.Data.DevTime;
+      });
+    },
+    syncTimeModeChange() {
+      //console.log("time sync mode changed.");
+      if (this.isSyncNetDatetime) {
+        getClientTime();
+        this.setDevTime();
+      }
+    },
+    getClientTime() {
+      let current = new Date();
+      this.devDate =
+        current.getFullYear() +
+        "-" +
+        (current.getMonth() + 1) +
+        "-" +
+        current.getDate();
+      this.devTime =
+        current.getHours() +
+        ":" +
+        current.getMinutes() +
+        ":" +
+        current.getSeconds();
+    },
+    setDevTime() {
+      let data = {
+        CMD: "SetDevTime",
+        Switch: this.isSyncNetDatetime,
+        NewDate: this.devDate,
+        NewTime: this.devTime,
+        Token: this.tokenStr
+      };
+      api.System(data).then(res => {
+        if (res.Status) {
+          this.$message({
+            showClose: true,
+            message: "更改设备日期时间成功。",
+            type: "success"
+          });
+        } else {
+          this.$message({
+            message: "更改设备日期时间失败！",
+            type: "warning"
+          });
+        }
+      });
+    }
+  },
+  watch: {},
+  mounted: function() {
+    this.getDevTime();
+  }
 };
 </script>
 

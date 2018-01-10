@@ -18,7 +18,7 @@
     <div class="row">
       <div class="column p20">通知内容</div>
       <div class="column p40">
-        <el-input v-model="alarmText"  placeholder="自定义通知" :maxlength='20' :disabled="isDefaultAlarmText"></el-input>
+        <el-input v-model="alarmText"  placeholder="自定义通知" :maxlength='50' :disabled="isDefaultAlarmText"></el-input>
       </div>
       <div class="column p40 center">
         <el-switch style="display: block" v-model="isDefaultAlarmText" active-color="#13ce66" inactive-color="#ff4949" active-text="预定"
@@ -29,7 +29,7 @@
     <div class="row" style="justify-content:flex-end;">
       <div class="column p30 center">
         <el-tooltip class="item" effect="dark" content="保存报警通知配置到设备" placement="left">
-          <el-button type="primary" icon="el-icon-success" >保存</el-button>
+          <el-button type="primary" icon="el-icon-success" @click="setAlarmMsmSettings">保存</el-button>
         </el-tooltip>
       </div>
     </div>
@@ -52,11 +52,50 @@ export default {
   },
   computed: {
     ...mapGetters({
-      isLogin: "isLogin"
+      isLogin: "isLogin",
+      tokenStr: "tokenStr"
     })
   },
-  methods: {},
-  watch: {}
+  methods: {
+    getAlarmSet() {
+      let data = {
+        CMD: "GetDevSMSAlarm",
+        Token: this.tokenStr
+      };
+      api.System(data).then(res => {
+        this.isDefaultAlarmText = res.Data.CustomSwitch;
+        this.alarmPhone = res.Data.PhoneNum;
+        this.alarmText = res.Data.PhoneContent;
+      });
+    },
+    setAlarmMsmSettings(){
+      let data = {
+        CMD: "SetDevSMSAlarm",
+        Switch: this.isDefaultAlarmText,
+        Phone: this.alarmPhone,
+        Content: this.alarmText,
+        Token: this.tokenStr
+      };
+      api.System(data).then(res => {
+        if (res.Status) {
+          this.$message({
+            showClose: true,
+            message: "应急报警联动发送短信通知配置更改成功。",
+            type: "success"
+          });
+        } else {
+          this.$message({
+            message: "应急报警联动发送短信通知配置更改失败！请检查后重试。",
+            type: "warning"
+          });
+        }
+      });
+    }
+  },
+  watch: {},
+  mounted: function() {
+    this.getAlarmSet();
+  }
 };
 </script>
 

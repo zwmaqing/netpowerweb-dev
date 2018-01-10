@@ -1,6 +1,6 @@
 <template>
   <div class="Grid">
-    <div id="left" class="u-1of40" v-show="!isShowSetEdit">
+    <div id="left" class="u-1of40" v-show="!isShowSetEdit" v-swipeleft="swipLift">
       <div class="setting-list">
         <!-- 还需要增加滚动条 -->
         <div class="list-item" v-for="(item, index) in settingsPro">
@@ -11,7 +11,7 @@
         </div>
       </div>
     </div>
-    <div id="right" v-bind:class="{'u-1of60':isPcDev,'u-1of1':isMobileDev}" v-show="isPcDev||isShowSetEdit">
+    <div id="right" v-bind:class="{'u-1of60':isPcDev,'u-1of1':isMobileDev}" v-show="isPcDev||isShowSetEdit" v-swiperight="swipRight">
       <component v-bind:is="currentView">
         <!-- 组件在 vm.currentview 变化时改变！ -->
       </component>
@@ -45,6 +45,8 @@ import sysDateTime from "../common/sysDateTime";
 import sysFastButton from "../common/sysFastButton";
 import sysPowerControl from "../common/sysPowerControl";
 import sysAlarm from "../common/sysAlarm";
+import sysUsersPerm from "../common/sysUsersPerm";
+import sysAudioCondi from "../common/sysAudioCondi";
 import sysAbout from "../common/sysAbout";
 
 export default {
@@ -53,8 +55,10 @@ export default {
     sysNetwork,
     sysDateTime,
     sysFastButton,
+    sysAudioCondi,
     sysAlarm,
     sysPowerControl,
+    sysUsersPerm,
     sysAbout
   },
   data() {
@@ -117,6 +121,7 @@ export default {
       isMobileDev: "isMobileDev",
       isPcDev: "isPcDev",
       isLogin: "isLogin",
+      tokenStr: "tokenStr",
       path: "path"
     })
   },
@@ -135,6 +140,7 @@ export default {
         }
         case 1: {
           this.currentView = "sysNetwork";
+          //this.getDevIP();
           break;
         }
         case 2: {
@@ -149,8 +155,16 @@ export default {
           this.currentView = "sysAlarm";
           break;
         }
+        case 5: {
+          this.currentView = "sysAudioCondi";
+          break;
+        }
         case 6: {
           this.currentView = "sysPowerControl";
+          break;
+        }
+        case 7: {
+          this.currentView = "sysUsersPerm";
           break;
         }
         case 8: {
@@ -161,19 +175,34 @@ export default {
     },
     returnSettings() {
       this.isShowSetEdit = false;
+    },
+    getDevIP() {
+      let data = {
+        CMD: "GetIP",
+        Token: this.tokenStr
+      };
+      api.System(data).then();
+    },
+    swipRight: function(s) {
+      this.isShowSetEdit = false;
+    },
+    swipLift: function(s) {
+      if (this.currentView == "") {
+        this.currentView = "systemStorage";
+      }
+      this.isShowSetEdit = true;
     }
   },
   watch: {},
   created() {
     //组件创建完后
     this.setPath("settings");
+    if (this.isPcDev) this._selectSetting("", 0);
   }
 };
 </script>
 
 <style lang="scss" scoped>
-@import "../../assets/css/function.scss";
-
 .Grid {
   display: -webkit-flex;
   display: flex;
@@ -207,11 +236,11 @@ export default {
       position: relative;
       height: 2.6em;
       border-bottom: 1px solid #3c3662;
-      background: #6897b0;
+      // background: #6897b0;
       display: flex;
       align-items: center;
       cursor: pointer;
-      color: #fff;
+      // color: #fff;
       &:last-child {
         border-bottom: none;
       }

@@ -13,7 +13,7 @@
         设备型号
       </div>
       <div class="column p80">
-        ZWNB_U2A4CH16C35_350
+        {{DevModel}}
       </div>
     </div>
     <div class="row">
@@ -21,7 +21,7 @@
         序列号SN
       </div>
       <div class="column p80">
-        HR935F.6FDB33.4F5RVE
+        {{DevSN}}
       </div>
     </div>
     <div class="row">
@@ -29,7 +29,7 @@
         硬件版本
       </div>
       <div class="column p80">
-        A4.Vs3.DC35.Re16.PD350.Y102.B1
+        {{HardwareVersion}}
       </div>
     </div>
     <div class="row">
@@ -37,7 +37,7 @@
         软件版本
       </div>
       <div class="column p80">
-        A4.2.1.0.1B
+        {{SoftwareVersion}}
       </div>
     </div>
     <div class="row">
@@ -45,7 +45,7 @@
         软件更新
       </div>
       <div class="column p50">
-        {{netFirmwareVersion}}
+        {{NewSoftwareVersion}}
       </div>
       <div class="column p30">
         <el-button size="small" type="primary" icon="el-icon-refresh" @click="update">{{updatedButton}}</el-button>
@@ -64,69 +64,105 @@
   </div>
 </template>
 
-
-
 <script>
 import Vue from "vue";
-import { mapGetters } from "vuex";
+import { mapGetters, mapActions } from "vuex";
 import api from "../../api/index";
 
 export default {
   data() {
     return {
       isAllowUpdate: false,
-      netFirmwareVersion: ""
+      DevModel: "",
+      DevSN: "",
+      HardwareVersion: "",
+      SoftwareVersion: "",
+      NewSoftwareVersion: ""
     };
   },
   computed: {
     ...mapGetters({
-      isLogin: "isLogin"
+      isLogin: "isLogin",
+      tokenStr: "tokenStr",
+      TaskRefreshTimer: "TaskRefreshTimer"
     }),
     updatedButton() {
       return this.isAllowUpdate ? "更新软件" : "检查更新";
     }
   },
   methods: {
+    ...mapActions(["isReloginToDev"]),
+    getDevBasicInfo() {
+      let data = {
+        CMD: "GetDevInfo",
+        Token: this.tokenStr
+      };
+      api.System(data).then(res => {
+        this.DevModel = res.Data.DevModel;
+        this.DevSN = res.Data.DevSN;
+        this.HardwareVersion = res.Data.HardwareVersion;
+        this.SoftwareVersion = res.Data.SoftwareVersion;
+      });
+    },
+
     getNetFirmwareVersion() {
       //模拟数据
-      this.netFirmwareVersion = "A4.2.1.0.2B";
-      this.isAllowUpdate = true;
+      api.GetUpgradeData({}).then(res => {
+        // let data=JSON.parse(res);
+        //let version = res.SoftwareVersion.split(".");
+        this.NewSoftwareVersion = res.SoftwareVersion;
+        if (this.SoftwareVersion !== res.SoftwareVersion) {
+          //console.log(res.SoftwareVersion);
+          this.isAllowUpdate = true;
+        }
+      });
     },
     update() {
       if (!this.isAllowUpdate) {
         this.getNetFirmwareVersion();
       } else {
-        //update function
         this.$confirm("此操作将更新设备软件并重启设备, 是否继续?", "提示", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
           type: "warning"
-        })
-          .then(() => {
-            this.$message({
-              type: "success",
-              message: "更新成功!"
-            });
-          })
-          .catch(() => {
-            this.$message({
-              type: "info",
-              message: "已取消更新"
-            });
+        }).then(() => {
+          let data = {
+            CMD: "SystemUp",
+            Token: this.tokenStr
+          };
+          api.System(data).then(res => {
+            if (res.Status) {
+              this.$message({
+                showClose: true,
+                message: "启动系统更新成功！请记请等待系统更新并重启完成(大约1分钟)。",
+                type: "success"
+              });
+              clearInterval(this.TaskRefreshTimer);
+              let data = {
+                CMD: "SignOut",
+                Token: this.tokenStr
+              };
+              api.System(data).then(res => {
+                this.$router.push("/login"); //进入登录页面
+              });
+            }
           });
+        });
       }
     }
   },
-  watch: {}
+  watch: {},
+  mounted: function() {
+    this.getDevBasicInfo();
+  }
 };
 </script>
 
 <style lang="scss" scoped>
-
 .grig {
   width: 100%;
   height: 100%;
-  overflow-y:auto;
+  overflow-y: auto;
   .row {
     height: 46px;
     display: flex;
@@ -182,7 +218,7 @@ export default {
 .user-logo {
   width: 40px;
   height: 40px;
- // border-radius: 50%;
+  // border-radius: 50%;
 }
 </style>
 

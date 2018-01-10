@@ -6,5 +6,16 @@ export default {
   userName: state => state.userName,
   isLogin: state => state.isLogin,
   tokenStr: state => state.tokenStr,
-  path: state => state.path
+  weekOptions: state => state.weekOptions,
+  path: state => state.path,
+  groupsTotal: state => state.groupsTotal,
+  groups: state => state.groups,
+  channals: state => state.channals,
+  tasks: state => state.tasks,
+  taskTotal: state => state.taskTotal,
+  taskPageIndex: state => state.taskPageIndex,
+  runningTask: state => state.runningTask,
+  isTaskRefresh: state => state.isTaskRefresh,
+  TaskRefreshTimer: state => state.TaskRefreshTimer,
+  isDevCommBusy:state=>state.isDevCommBusy
 }

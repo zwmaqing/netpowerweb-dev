@@ -48,7 +48,8 @@ export default {
       isLogin: "isLogin",
       tokenStr: "tokenStr",
       isMobileDev: "isMobileDev",
-      isPcDev: "isPcDev"
+      isPcDev: "isPcDev",
+      TaskRefreshTimer: "TaskRefreshTimer"
     }),
     dateStr() {
       var d = new Date();
@@ -72,6 +73,7 @@ export default {
       }
     },
     _SignOut() {
+      clearInterval(this.TaskRefreshTimer);
       let data = {
         CMD: "SignOut",
         Token: this.tokenStr
@@ -84,8 +86,6 @@ export default {
           if (res.StatusCode === 200) {
             console.log("成功退出设备系统。");
           } else {
-            console.log("发生错误！错误信息：" + res.StatusMessage);
-            //_.toast('发生错误！错误信息：' + res.StatusMessage);
             this.notice = "发生错误！" + res.DetailedInfo;
           }
           this.SET_USERNAME("");
@@ -96,8 +96,12 @@ export default {
           this.$router.push("/login"); //进入登录页面
         })
         .catch(res => {
-          //_.toast('发生错误！错误信息：' + res);
-          this.notice = "发生错误！错误信息：网络故障或设备关闭。";
+          this.SET_USERNAME("");
+          this.SET_ISLOGIN(false);
+          this.SET_TOKENSTR("");
+          _.clearCookie("User_Login_Token");
+          _.clearCookie("User_Login_Name");
+          this.$router.push("/login"); //进入登录页面
         });
     }
   }
@@ -148,5 +152,4 @@ export default {
 .el-dropdown-menu__item {
   text-align: center;
 }
-
 </style>
