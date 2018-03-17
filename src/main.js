@@ -213,6 +213,13 @@ Array.prototype.contains = function (obj) {
   return false;
 }
 
+Array.prototype.remove = function(index) {
+  //var index = this.indexOf(val);
+  if (index > -1) {
+  this.splice(index, 1);
+  }
+  };
+
 
 // v-loadmore: 用于在element-ui的select下拉框加上滚动到底事件监听vscrollbar
 Vue.directive('vscrollbar', {

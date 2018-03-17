@@ -1,0 +1,13 @@
+.el-table .cell,.el-table th div{padding-right
+.el-table .cell,.el-table th div{padding-left
+
+.el-menu-item,.el-submenu__title{height:56px;
+
+.el-message-box{display:inline-block;width
+
+
+http://ipbroadcast.oss-cn-hangzhou.aliyuncs.com/Upgrade/update.json
+
+http://ipbroadcast.oss-cn-hangzhou.aliyuncs.com/Upgrade/Firmware/zwnpowerup.bin
+
+

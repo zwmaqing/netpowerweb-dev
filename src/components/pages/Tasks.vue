@@ -381,8 +381,8 @@ export default {
         TimeSpan: "00:10:00",
         TimeValue: [new Date(2000, 0, 1, 8, 30), new Date(2000, 0, 1, 8, 40)],
         Week: [1, 2, 3, 4, 5],
-        StartVolume: 60,
-        EndVolume: 60,
+        StartVolume: 80,
+        EndVolume: 80,
         Projects: 0,
         PlayModel: "Order",
         GroupList: [],
@@ -401,6 +401,14 @@ export default {
     },
     startOrStopTask(row) {
       this.getSelectTaskData(row);
+      if (this.isPcDev) {
+        this.loardTaskProject("1-16");
+        if (this.getProListCapacity() > 16 && this.theTaskData.Projects > 16) {
+          setTimeout(() => {
+            this.loardTaskProject("17-32");
+          }, 2500);
+        }
+      }
       switch (row.Status) {
         case "Running": {
           //实际停止操作
@@ -429,6 +437,7 @@ export default {
     },
     editTask(row) {
       this.getSelectTaskData(row);
+
       let message = this.theTaskData.IsSystem ? "系统默认任务不能编辑修改." : "";
       message =
         this.theTaskData.Status == "Runing" ? "任务正在执行,不能编辑修改,请停止后更改." : message;
@@ -438,6 +447,15 @@ export default {
           type: "warning"
         });
         return;
+      }
+      //小屏浏览，进入编辑页面时，获取任务项目列表
+      if (this.isMobileDev) {
+        this.loardTaskProject("1-16");
+        if (this.getProListCapacity() > 16 && this.theTaskData.Projects > 16) {
+          setTimeout(() => {
+            this.loardTaskProject("17-32");
+          }, 2500);
+        }
       }
       this.isEditDisabled = false;
       if (this.isMobileDev) {
@@ -611,6 +629,7 @@ export default {
           if (res.Status) {
             this.isEditDisabled = true;
             this.isAddNewTask = false;
+            this.returnTask();//如果小屏，返回任务列表界面再刷新
             this.getTasksTotal();
             this.getTasks({ range: "1-12" });
             if (this.getTaskListCapacity() > 12 && this.taskTotal > 12) {
@@ -619,7 +638,7 @@ export default {
               }, 2500);
             }
 
-            this.theTaskData = this.getNewTask();
+           // this.theTaskData = this.getNewTask();
           }
         });
       } else {
@@ -651,13 +670,17 @@ export default {
         ProIndex: row.Index,
         Token: this.tokenStr
       };
-
       api.Task(params).then(res => {
         res.$router = this.$router;
         this.isReloginToDev(res);
+
+        if (res.Status) {
+          this.theTaskProjects.splice((row.Index-1), 1);
+          console.log(row.Index);
+        }
         this.$message({
           showClose: true,
-          message: "删除任务项目" + (res.Status ? "成功." : "失败!请检查后重试."),
+          message: "删除任务项目" + (res.Status ? "成功." : "失败!请检查后重试." + row.Index),
           type: res.Status ? "success" : "warning"
         });
       });

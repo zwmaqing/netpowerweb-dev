@@ -58,7 +58,7 @@
         <el-button type="info" @click="repareMeal">用餐准备</el-button>
         <el-button type="info" @click="readyLeave">放学准备</el-button>
         <el-button  @click="lineUpToRemind">家长请排队</el-button>
-        <el-button>危险按钮</el-button>
+        <el-button @click="classSpeakDemo">刷卡播报Demo</el-button>
         <el-button type="primary" v-for="item in fastbuttons" :key="item.butID" @click="fastSpaekButton(item)">{{item.label}}</el-button>
       </div>
     </div>
@@ -71,9 +71,9 @@
         </el-table-column>
         <el-table-column label="操作" width="176">
           <template slot-scope="scope">
-            <el-button size="small" type="primary" icon="el-icon-success" @click="speakHistoricalRecord">重播</el-button>
-            <el-button size="small" icon="el-icon-edit" @click="speakHistoricalRecord">编辑</el-button>
-            <el-button size="small" type="danger" icon="el-icon-delete" @click="speakHistoricalRecord">删除</el-button>
+            <el-button size="small" type="primary" icon="el-icon-success" @click="speakHistoricalRecord(scope.row)">重播</el-button>
+            <el-button size="small" icon="el-icon-edit" @click="speakHistoricalEdit">编辑</el-button>
+            <el-button size="small" type="danger" icon="el-icon-delete" @click="speakHistoricalDel">删除</el-button>
           </template>
         </el-table-column>
         <slot name="append"></slot>
@@ -158,12 +158,12 @@ export default {
       spaekHistory: [
         {
           logID: 1,
-          groupList: [102, 103],
+          groupList: [1, 2],
           txt: "各班老师，请于下午2点到会议室开会"
         },
         {
           logID: 2,
-          groupList: [102, 103],
+          groupList: [1, 2],
           txt: "大一班老师，请现在到操场准备布置活动现场"
         }
       ],
@@ -310,6 +310,23 @@ export default {
 
       this.speakTxtTTS("欢迎各位家长，请自觉排队不要拥挤,谢谢大家", group);
     },
+    classSpeakDemo() {
+      let params = {
+        CMD: "SpeakStudent",
+        ClassID: 11449,
+        Content: "王丽丽再见",
+        Token: this.tokenStr
+      };
+      api.Class(params).then(res => {
+        if (res.Status) {
+          this.$message({
+            showClose: true,
+            message: "播报请求已成功提交",
+            type: "success"
+          });
+        }
+      });
+    },
     fastSpaekButton(but) {
       this.$message({
         showClose: true,
@@ -318,7 +335,18 @@ export default {
       });
     },
     rowClick(row, event, column) {},
-    speakHistoricalRecord() {
+    speakHistoricalRecord(row) {
+      let groups = _.arrayToStrUnderInterval(row.groupList);
+      this.speakTxtTTS(row.txt, groups);
+    },
+    speakHistoricalEdit() {
+      this.$message({
+        showClose: true,
+        message: "此播报的功能数据接口已禁用.",
+        type: "warning"
+      });
+    },
+    speakHistoricalDel() {
       this.$message({
         showClose: true,
         message: "此播报的功能数据接口已禁用.",
