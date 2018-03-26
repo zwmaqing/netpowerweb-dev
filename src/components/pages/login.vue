@@ -32,8 +32,8 @@ export default {
     return {
       notice: "提示 : 用户名 admin,密码123456。",
       ruleForm: {
-        userName: "",
-        password: ""
+        userName: "admin",
+        password: "123456"
       },
       rules: {
         userName: [{ required: true, message: "请输入用户名", trigger: "blur" }],

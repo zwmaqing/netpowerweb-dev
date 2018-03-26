@@ -39,10 +39,13 @@
         <el-dialog title="播报参数设置" :visible.sync="ttsSetFormVisible">
           <el-form :model="ttsSetting">
             <el-form-item label="播报音量" :label-width="ttsSetLabelWidth">
-              <el-slider v-model="ttsSetting.Volume" :max="16"></el-slider>
+              <el-slider v-model="ttsSetting.Volume" :max="10"></el-slider>
             </el-form-item>
             <el-form-item label="播报语速" :label-width="ttsSetLabelWidth">
               <el-slider v-model="ttsSetting.Speed" :max="10"></el-slider>
+            </el-form-item>
+             <el-form-item label="播报语调" :label-width="ttsSetLabelWidth">
+              <el-slider v-model="ttsSetting.Pitch" :max="10"></el-slider>
             </el-form-item>
           </el-form>
           <div slot="footer" class="dialog-footer">
@@ -104,17 +107,16 @@ export default {
           },
           {
             value: "man",
-            label: "成年男士",
-            disabled: true
+            label: "成年男士"
           },
           {
             value: "girl",
-            label: "童声女孩",
-            disabled: true
+            label: "童声女孩"
           }
         ],
-        Volume: 12,
-        Speed: 4
+        Volume: 8,
+        Speed: 4,
+        Pitch: 5
       },
       ttsSetFormVisible: false,
       ttsSetLabelWidth: "80px",
@@ -238,6 +240,7 @@ export default {
         Volume: this.ttsSetting.Volume,
         Speed: this.ttsSetting.Speed,
         Role: this.speakData.role,
+        Pitch: this.ttsSetting.Pitch,
         Token: this.tokenStr
       };
       api.Speak(params).then(res => {
