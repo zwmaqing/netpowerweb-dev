@@ -142,14 +142,29 @@
           }
         });
       },
-      delClass(classItem) {},
+      delClass(classItem) {
+        let params = {
+          CMD: "DelClass",
+          ClassID: classItem.ClassID,
+          Token: this.tokenStr
+        };
+        api.Class(params).then(res => {
+          this.$message({
+            showClose: true,
+            message: "该班级刷卡播报设置删除" +
+              (res.Status ? "成功！" : "失败！检查后重试。"),
+            type: res.Status ? "success" : "warning"
+          });
+          this.getSpeakClass("0-15");
+        });
+      },
       saveClass(classItem) {
         let params = {
           CMD: "SetClass",
           ClassID: classItem.ClassID,
           ClassName: classItem.ClassName,
           IsSpeakClass: classItem.IsSpeakClass,
-          Role:classItem.Role,
+          Role: classItem.Role,
           Speed: classItem.Speed,
           Pitch: classItem.Pitch,
           Volume: classItem.Volume,
@@ -176,7 +191,7 @@
     created() {
       //组件创建完后
       this.getChannals();
-      this.getSpeakClass("0-12");
+      this.getSpeakClass("0-15");
     }
   };
 
