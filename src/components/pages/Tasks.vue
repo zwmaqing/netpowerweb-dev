@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="Grid">
     <div id="left" v-bind:class="{'u-1of40':isPcDev,'u-1of1':isMobileDev}" v-show="!isShowTaskEdit">
       <el-table :data="tasks" :row-class-name="taskStatueClass" :height="taskListHeighX" @row-click="rowClick" v-loading="isTaskLoading"
@@ -437,11 +437,14 @@ export default {
     },
     editTask(row) {
       this.getSelectTaskData(row);
-
-      let message = this.theTaskData.IsSystem ? "系统默认任务不能编辑修改." : "";
+      let message = this.theTaskData.IsSystem
+        ? "系统默认任务不能编辑修改."
+        : "";
       message =
-        this.theTaskData.Status == "Runing" ? "任务正在执行,不能编辑修改,请停止后更改." : message;
-      if (this.theTaskData.IsSystem || this.theTaskData.Status == "Runing") {
+        this.theTaskData.Status == "Running"
+          ? "任务正在执行,不能编辑修改,请停止后更改."
+          : message;
+      if (this.theTaskData.IsSystem || this.theTaskData.Status == "Running") {
         this.$message({
           message: message,
           type: "warning"
@@ -466,9 +469,16 @@ export default {
       this.returnTask();
     },
     delTask(row) {
-      if (row.IsSystem) {
+      this.getSelectTaskData(row);
+      let message = this.theTaskData.IsSystem ? "系统默认任务不能删除." : "";
+      message =
+        this.theTaskData.Status == "Running"
+          ? "任务正在执行,不能删除,请停止后删除."
+          : message;
+
+      if (this.theTaskData.IsSystem || this.theTaskData.Status == "Running") {
         this.$message({
-          message: "系统默认任务不能编辑删除",
+          message: message,
           type: "warning"
         });
         return;
@@ -492,6 +502,7 @@ export default {
               //移除此任务
               this.delOneTaskForBuff(row.TaskID);
               this.theTaskData = this.getNewTask();
+              this.theTaskProjects = [];
             } else {
               this.$message({
                 message: "删除该任务失败！请检查后重试。",
@@ -620,16 +631,30 @@ export default {
         api.Task(params).then(res => {
           res.$router = this.$router;
           this.isReloginToDev(res);
+          let message = "保存定时任务" + (res.Status ? "成功." : "失败!");
+
+          if (!res.Status) {
+            if (res.StatusMessage.indexOf("TaskNameOver") > 0) {
+              message += "任务名称与既有任务名重叠!";
+            }
+
+            if (res.StatusMessage.indexOf("TaskTimeOver") > 0) {
+              message += "任务时间范围与既有任务时段重叠!";
+            }
+          }
           this.$message({
             showClose: true,
-            message: "保存定时任务" + (res.Status ? "成功." : "失败!请检查后重试."),
+
+            message: message,
+
             type: res.Status ? "success" : "warning"
           });
+
           //成功状态
           if (res.Status) {
             this.isEditDisabled = true;
             this.isAddNewTask = false;
-            this.returnTask();//如果小屏，返回任务列表界面再刷新
+            this.returnTask(); //如果小屏，返回任务列表界面再刷新
             this.getTasksTotal();
             this.getTasks({ range: "1-12" });
             if (this.getTaskListCapacity() > 12 && this.taskTotal > 12) {
@@ -638,7 +663,7 @@ export default {
               }, 2500);
             }
 
-           // this.theTaskData = this.getNewTask();
+            // this.theTaskData = this.getNewTask();
           }
         });
       } else {
@@ -670,17 +695,25 @@ export default {
         ProIndex: row.Index,
         Token: this.tokenStr
       };
+      this.isProjectLoading = true; //显示loading
+
+      setTimeout(() => {
+        this.isProjectLoading = false;
+      }, 800);
+
       api.Task(params).then(res => {
         res.$router = this.$router;
         this.isReloginToDev(res);
 
         if (res.Status) {
-          this.theTaskProjects.splice((row.Index-1), 1);
+          this.theTaskProjects.splice(row.Index - 1, 1);
           console.log(row.Index);
         }
         this.$message({
           showClose: true,
-          message: "删除任务项目" + (res.Status ? "成功." : "失败!请检查后重试." + row.Index),
+          message:
+            "删除任务项目" +
+            (res.Status ? "成功." : "失败!请检查后重试." + row.Index),
           type: res.Status ? "success" : "warning"
         });
       });
@@ -769,7 +802,7 @@ export default {
     this.getGroups("1-16"); //需要完善分页请求
     this.getChannals();
   }
-};
+}; 
 </script>
 
 <style lang="scss" scoped>

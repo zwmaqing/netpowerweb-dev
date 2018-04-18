@@ -69,7 +69,7 @@ export default {
     _temporaryPlay(index) {
       this.$message({
         showClose: true,
-        message: "_temporaryPlay index: " + index,
+        message: "暂不支持远程试听.",
         type: "success"
       });
     },
@@ -88,7 +88,7 @@ export default {
     _del(index) {
       this.$message({
         showClose: true,
-        message: "_del index: " + index,
+        message: "暂不支持远程删除操作.",
         type: "success"
       });
     },
