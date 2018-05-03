@@ -186,18 +186,16 @@ export default {
       //检查缓存有没有，没有则添加到浏览器缓存，以用于历史记录
       this.saveSpeakToLocalStorage();
     },
-    speakTxtTTS(content, groups) {
+    speakTxtTTS(content, groups, volume, speed, role, pitch) {
       let params = {
         CMD: "SpeakTTS",
         Content: content, //this.speakData.speakContent,
         Groups:
-          groups == undefined
-            ? _.arrayToStrUnderInterval(this.speakData.groupList)
-            : groups,
-        Volume: this.ttsSetting.Volume,
-        Speed: this.ttsSetting.Speed,
-        Role: this.speakData.role,
-        Pitch: this.ttsSetting.Pitch,
+          groups == undefined ? this.speakData.groupList.join("_") : groups,
+        Volume: volume == undefined ? this.ttsSetting.Volume : volume,
+        Speed: speed == undefined ? this.ttsSetting.Speed : speed,
+        Role: role == undefined ? this.speakData.role : role,
+        Pitch: pitch == undefined ? this.ttsSetting.Pitch : pitch,
         Token: this.tokenStr
       };
       api.Speak(params).then(res => {
@@ -248,30 +246,14 @@ export default {
       this.speakTxtTTS(timeStr, "100");
     },
     fastSpaekButton(but) {
-      let params = {
-        CMD: "SpeakTTS",
-        Content: but.Content,
-        Groups: but.Groups.join("_"),
-        Volume: but.Volume,
-        Speed: but.Speed,
-        Role: but.Role,
-        Pitch: but.Pitch,
-        Token: this.tokenStr
-      };
-      api.Speak(params).then(res => {
-        if (res.Status) {
-          this.$message({
-            showClose: true,
-            message: "播报请求已成功提交",
-            type: "success"
-          });
-        } else {
-          this.$message({
-            message: "播报请求提交失败！请检查后重试。",
-            type: "warning"
-          });
-        }
-      });
+      this.speakTxtTTS(
+        but.Content,
+        but.Groups.join("_"),
+        but.Volume,
+        but.Speed,
+        but.Role,
+        but.Pitch
+      );
     },
     editFastSpaekButton(but) {
       this.$notify.info({
@@ -354,8 +336,14 @@ export default {
     },
     rowClick(row, event, column) {},
     speakHistoricalRecord(row) {
-      let groups = row.Groups.join("_");
-      this.speakTxtTTS(row.Content, groups);
+      this.speakTxtTTS(
+        row.Content,
+        row.Groups.join("_"),
+        row.Volume,
+        row.Speed,
+        row.Role,
+        row.Pitch
+      );
     },
     speakHistoricalEdit(row) {
       //载入到Input
@@ -372,7 +360,7 @@ export default {
       //console.log("Index:" + index);
       if (index > -1) {
         this.spaekHistory.splice(index, 1);
-         var storage = window.localStorage;
+        var storage = window.localStorage;
         storage.setItem("spaekHistory", JSON.stringify(this.spaekHistory));
       }
     },
@@ -387,13 +375,21 @@ export default {
         Pitch: this.ttsSetting.Pitch,
         Token: this.tokenStr
       };
+      if (this.spaekHistory == null) {
+        this.spaekHistory = [];
+      }
       this.spaekHistory.push(speakRecord);
       storage.setItem("spaekHistory", JSON.stringify(this.spaekHistory));
       //
     },
     loadSpeakRecordLocalStorage() {
       var storage = window.localStorage;
-      this.spaekHistory = JSON.parse(storage.getItem("spaekHistory"));
+      var history = JSON.parse(storage.getItem("spaekHistory"));
+      if (history != null) {
+        this.spaekHistory = history;
+      } else {
+        this.spaekHistory = [];
+      }
     },
     longTimeTest() {}
   },
