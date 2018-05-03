@@ -11,12 +11,12 @@ axios.defaults.baseURL = 'http://192.168.10.150';
 
 // 创建实例时设置配置的默认值
 var instance = axios.create({
-  baseURL: 'http://192.168.10.150',
+  baseURL: 'http://192.168.10.196',
   timeout: 3000
 });
 
 var instanceSync = axios.create({
-  baseURL: 'http://192.168.10.150',//'http://192.168.10.106'
+  baseURL: 'http://192.168.10.196',//'http://192.168.10.106'
   timeout: 3000,
 });
 

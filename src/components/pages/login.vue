@@ -2,7 +2,7 @@
     <div class="login-wrap">
         <!-- <img class="user-logo" src="../../static/img/zwSound-d.png"> -->
         <div class="ms-title">
-            播放服务器-管理系统-Dev</div>
+            播放服务器-管理系统</div>
         <div class="ms-login">
             <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="0px" class="demo-ruleForm">
                 <el-form-item prop="userName">

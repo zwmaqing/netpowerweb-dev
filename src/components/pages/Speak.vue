@@ -26,13 +26,15 @@
               </el-select>
             </div>
           </el-form-item>
+          <el-form-item label="播报名称:" label-width="75px" v-show="fastButtonSet.IsEdit">
+            <div id="styleDefW">
+              <el-input v-model="fastButtonSet.AnotherName" :minlength=2 :maxlength=10  placeholder="快捷播报名称"></el-input>
+            </div>
+          </el-form-item>
           <div class="el-row--flex is-justify-end">
             <el-form-item>
-              <el-tooltip content="收藏为快捷播报" placement="left" effect="light">
-                <el-button type="success" icon="el-icon-star-on" size="medium" @click="collectQuickSpeak">收藏</el-button>
-              </el-tooltip>
+              <el-button type="success" icon="el-icon-circle-check" size="medium" v-show="fastButtonSet.IsEdit" @click="saveFastSpaek">存储快捷播报</el-button>
               <el-button type="primary" class="icon16 icon-bullhorn" size="small" @click="speakInputTxt">. 播报</el-button>
-              <!-- <el-button type="primary" size="small" @click="longTimeTest">长链请求</el-button> -->
             </el-form-item>
           </div>
         </el-form>
@@ -44,7 +46,7 @@
             <el-form-item label="播报语速" :label-width="ttsSetLabelWidth">
               <el-slider v-model="ttsSetting.Speed" :max="10"></el-slider>
             </el-form-item>
-             <el-form-item label="播报语调" :label-width="ttsSetLabelWidth">
+            <el-form-item label="播报语调" :label-width="ttsSetLabelWidth">
               <el-slider v-model="ttsSetting.Pitch" :max="10"></el-slider>
             </el-form-item>
           </el-form>
@@ -54,29 +56,28 @@
         </el-dialog>
       </div>
       <div id="fastSpaek">
-        <el-button type="danger" @click="userFireAlarm">消防报警</el-button>
-        <el-button type="warning" @click="closeDoor">即将关门</el-button>
-        <el-button type="primary" @click="speakTime">播报时间</el-button>
-        <el-button type="success" @click="playground">操场集合</el-button>
-        <el-button type="info" @click="repareMeal">用餐准备</el-button>
-        <el-button type="info" @click="readyLeave">放学准备</el-button>
-        <el-button  @click="lineUpToRemind">家长请排队</el-button>
-        <el-button @click="classSpeakDemo">刷卡播报Demo</el-button>
-        <el-button type="primary" v-for="item in fastbuttons" :key="item.butID" @click="fastSpaekButton(item)">{{item.label}}</el-button>
+        <el-button type="danger" icon="el-icon-info" @click="userFireAlarm">消防/应急报警(打开/关闭)</el-button>
+        <el-button type="warning" icon="el-icon-time" @click="speakTime">全区域播报当前时间</el-button>
+        <el-button-group v-for="item in fastbuttons" :key="item.Index">
+          <el-button-group>
+            <el-button type="primary" @click="fastSpaekButton(item)">{{item.AnotherName}}</el-button>
+            <el-button type="primary" icon="el-icon-edit" @click="editFastSpaekButton(item)"></el-button>
+          </el-button-group>
+        </el-button-group>
       </div>
     </div>
     <div id="right" class="Grid-cell u-1of2" v-show="isPcDev">
       <el-table :data="spaekHistory" style="width: 100%" border @row-click="rowClick">
         <el-table-column label="播报历史记录">
           <template slot-scope="scope">
-            <span style="margin-left: 0px">{{ scope.row.txt}}</span>
+            <span style="margin-left: 0px">{{ scope.row.Content}}</span>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="176">
           <template slot-scope="scope">
             <el-button size="small" type="primary" icon="el-icon-success" @click="speakHistoricalRecord(scope.row)">重播</el-button>
-            <el-button size="small" icon="el-icon-edit" @click="speakHistoricalEdit">编辑</el-button>
-            <el-button size="small" type="danger" icon="el-icon-delete" @click="speakHistoricalDel">删除</el-button>
+            <el-button size="small" icon="el-icon-edit" @click="speakHistoricalEdit(scope.row)">编辑</el-button>
+            <el-button size="small" type="danger" icon="el-icon-delete" @click="speakHistoricalDel(scope.row)">删除</el-button>
           </template>
         </el-table-column>
         <slot name="append"></slot>
@@ -84,7 +85,6 @@
     </div>
   </div>
 </template>
-
 
 <script>
 import { mapGetters, mapActions } from "vuex";
@@ -125,50 +125,13 @@ export default {
         role: "women",
         groupList: []
       },
-      fastbuttons: [
-        {
-          label: "快捷按键1",
-          butID: "102",
-          groupList: [102, 103],
-          txt: "播报内容尚未配置"
-        },
-        {
-          label: "快捷按键2",
-          butID: "103",
-          groupList: [102, 103],
-          txt: "播报内容尚未配置"
-        },
-        {
-          label: "快捷按键3",
-          butID: "104",
-          groupList: [102, 103],
-          txt: "播报内容尚未配置"
-        },
-        {
-          label: "快捷按键4",
-          butID: "105",
-          groupList: [102, 103],
-          txt: "播报内容尚未配置"
-        },
-        {
-          label: "快捷按键1",
-          butID: "102",
-          groupList: [102, 103],
-          txt: "播报内容尚未配置"
-        }
-      ],
-      spaekHistory: [
-        {
-          logID: 1,
-          groupList: [1, 2],
-          txt: "各班老师，请于下午2点到会议室开会"
-        },
-        {
-          logID: 2,
-          groupList: [1, 2],
-          txt: "大一班老师，请现在到操场准备布置活动现场"
-        }
-      ],
+      fastButtonSet: {
+        IsEdit: false,
+        FastButtonID: 0,
+        AnotherName: ""
+      },
+      fastbuttons: [],
+      spaekHistory: [],
       isUserFireAlarm: false
     };
   },
@@ -204,13 +167,6 @@ export default {
   mounted() {},
   methods: {
     ...mapActions(["setPath", "getGroupsTotal", "getGroups", "getChannals"]),
-    collectQuickSpeak() {
-      this.$message({
-        showClose: true,
-        message: "收藏到快捷播报成功.",
-        type: "success"
-      });
-    },
     speakInputTxt() {
       if (this.speakData.speakContent.length < 1) {
         this.$message({
@@ -228,6 +184,7 @@ export default {
       }
       this.speakTxtTTS(this.speakData.speakContent);
       //检查缓存有没有，没有则添加到浏览器缓存，以用于历史记录
+      this.saveSpeakToLocalStorage();
     },
     speakTxtTTS(content, groups) {
       let params = {
@@ -284,77 +241,159 @@ export default {
         }
       });
     },
-    closeDoor() {
-      this.speakTxtTTS("即将关闭大门,听到广播后请尽快离开", "100");
-    },
     speakTime() {
       let time = new Date();
-      let timeStr = "现在时间 " + time.getHours() + "点 " + time.getMinutes() + "分";
+      let timeStr =
+        "现在时间 " + time.getHours() + "点 " + time.getMinutes() + "分";
       this.speakTxtTTS(timeStr, "100");
     },
-    playground() {
-      this.speakTxtTTS("请注意 听到广播后立即到操场集合", "100");
-    },
-    repareMeal() {
-      this.speakTxtTTS("即将到用餐时间,请尽快做好用餐准备", "100");
-    },
-    readyLeave() {
-      this.speakTxtTTS("即将放学,听到广播后请尽快做好放学准备", "100");
-    },
-    lineUpToRemind() {
-      if (this.speakData.groupList.length < 1) {
-        this.$message({
-          message: "请选择收听播报的喇叭或分区。",
-          type: "warning"
-        });
-        return;
-      }
-      let group = _.arrayToStrUnderInterval(this.speakData.groupList);
-
-      this.speakTxtTTS("欢迎各位家长，请自觉排队不要拥挤,谢谢大家", group);
-    },
-    classSpeakDemo() {
+    fastSpaekButton(but) {
       let params = {
-        CMD: "SpeakStudent",
-        ClassID: 11449,
-        Content: "王丽丽再见",
+        CMD: "SpeakTTS",
+        Content: but.Content,
+        Groups: but.Groups.join("_"),
+        Volume: but.Volume,
+        Speed: but.Speed,
+        Role: but.Role,
+        Pitch: but.Pitch,
         Token: this.tokenStr
       };
-      api.Class(params).then(res => {
+      api.Speak(params).then(res => {
         if (res.Status) {
           this.$message({
             showClose: true,
             message: "播报请求已成功提交",
             type: "success"
           });
+        } else {
+          this.$message({
+            message: "播报请求提交失败！请检查后重试。",
+            type: "warning"
+          });
         }
       });
     },
-    fastSpaekButton(but) {
-      this.$message({
-        showClose: true,
-        message: "播报请求: " + but.txt,
-        type: "success"
+    editFastSpaekButton(but) {
+      this.$notify.info({
+        title: "消息",
+        message: "修改快捷播报配置后,请保存快捷播报."
+      });
+      this.fastButtonSet.IsEdit = true;
+      this.fastButtonSet.FastButtonID = but.Index;
+      this.fastButtonSet.AnotherName = but.AnotherName;
+      this.speakData.speakContent = but.Content;
+      this.speakData.role = but.Role;
+      this.speakData.groupList = but.Groups;
+      this.ttsSetting.Volume = but.Volume;
+      this.ttsSetting.Speed = but.Speed;
+      this.ttsSetting.Pitch = but.Pitch;
+    },
+    saveFastSpaek() {
+      if (this.fastButtonSet.AnotherName == "") {
+        this.$message({
+          message: "请输入快捷播报名称!",
+          type: "warning"
+        });
+        return;
+      }
+      if (this.speakData.groupList.length == 0) {
+        this.$message({
+          message: "请选择快捷播报 的收听分区分组!",
+          type: "warning"
+        });
+        return;
+      }
+      //存储快捷播报
+      this.fastButtonSet.IsEdit = false;
+      //发出修改命令
+      let params = {
+        CMD: "SetShortCutKey",
+        Index: this.fastButtonSet.FastButtonID,
+        AnotherName: this.fastButtonSet.AnotherName,
+        Content: this.speakData.speakContent,
+        Groups: this.speakData.groupList.join("_"),
+        Volume: this.ttsSetting.Volume,
+        Speed: this.ttsSetting.Speed,
+        Role: this.speakData.role,
+        Pitch: this.ttsSetting.Pitch,
+        Token: this.tokenStr
+      };
+      api.Speak(params).then(res => {
+        if (res.Status) {
+          this.$message({
+            showClose: true,
+            message: "快捷播报修改请求，成功！",
+            type: "success"
+          });
+        } else {
+          this.$message({
+            message: "快捷播报修改请求失败！请检查后重试。",
+            type: "warning"
+          });
+        }
+      });
+      //恢复
+      this.speakData.speakContent = "";
+      this.speakData.groupList = [];
+      //重载快捷播报数据
+      this.getAllFastSpeak();
+    },
+    getAllFastSpeak() {
+      let params = {
+        CMD: "GetShortCutKey",
+        Range: "1-10",
+        Token: this.tokenStr
+      };
+      api.Speak(params).then(res => {
+        if (res.Status) {
+          this.fastbuttons = res.Data;
+        } else {
+          console.log("GetShortCutKey Ero");
+        }
       });
     },
     rowClick(row, event, column) {},
     speakHistoricalRecord(row) {
-      let groups = _.arrayToStrUnderInterval(row.groupList);
-      this.speakTxtTTS(row.txt, groups);
+      let groups = row.Groups.join("_");
+      this.speakTxtTTS(row.Content, groups);
     },
-    speakHistoricalEdit() {
-      this.$message({
-        showClose: true,
-        message: "此播报的功能数据接口已禁用.",
-        type: "warning"
-      });
+    speakHistoricalEdit(row) {
+      //载入到Input
+      this.speakData.speakContent = row.Content;
+      this.speakData.role = row.Role;
+      this.speakData.groupList = row.Groups;
+      this.ttsSetting.Volume = row.Volume;
+      this.ttsSetting.Speed = row.Speed;
+      this.ttsSetting.Pitch = row.Pitch;
     },
-    speakHistoricalDel() {
-      this.$message({
-        showClose: true,
-        message: "此播报的功能数据接口已禁用.",
-        type: "warning"
-      });
+    speakHistoricalDel(row) {
+      //删除
+      var index = this.spaekHistory.indexOf(row);
+      //console.log("Index:" + index);
+      if (index > -1) {
+        this.spaekHistory.splice(index, 1);
+         var storage = window.localStorage;
+        storage.setItem("spaekHistory", JSON.stringify(this.spaekHistory));
+      }
+    },
+    saveSpeakToLocalStorage() {
+      var storage = window.localStorage;
+      var speakRecord = {
+        Content: this.speakData.speakContent,
+        Groups: this.speakData.groupList,
+        Volume: this.ttsSetting.Volume,
+        Speed: this.ttsSetting.Speed,
+        Role: this.speakData.role,
+        Pitch: this.ttsSetting.Pitch,
+        Token: this.tokenStr
+      };
+      this.spaekHistory.push(speakRecord);
+      storage.setItem("spaekHistory", JSON.stringify(this.spaekHistory));
+      //
+    },
+    loadSpeakRecordLocalStorage() {
+      var storage = window.localStorage;
+      this.spaekHistory = JSON.parse(storage.getItem("spaekHistory"));
     },
     longTimeTest() {}
   },
@@ -368,7 +407,8 @@ export default {
       this.getGroups("0-15"); //需要完善分页请求
       this.getChannals();
     }
-
+    this.getAllFastSpeak();
+    this.loadSpeakRecordLocalStorage();
     //console.log("in to speak");
   }
 };
@@ -414,8 +454,13 @@ export default {
 }
 
 #fastSpaek .el-button {
-  margin: 4px 1px;
-  padding: 8px 10px;
+  margin: 4px 0px;
+  padding: 10px 10px;
+}
+
+#fastSpaek .el-button-group {
+  margin: 1px 2px;
+  padding: 1px 2px;
 }
 
 .cell {
@@ -429,3 +474,4 @@ export default {
   }
 }
 </style>
+

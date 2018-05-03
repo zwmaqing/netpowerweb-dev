@@ -75,7 +75,7 @@ export default {
     syncTimeModeChange() {
       //console.log("time sync mode changed.");
       if (this.isSyncNetDatetime) {
-        getClientTime();
+        this.getClientTime();
         this.setDevTime();
       }
     },

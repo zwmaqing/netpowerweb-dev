@@ -621,10 +621,10 @@ export default {
           PlayModel: this.theTaskData.PlayModel,
           StartTime: this.theTaskData.TimeValue[0].format("hh:mm:ss"),
           TimeSpan: hours + ":" + minutes + ":" + seconds,
-          Week: _.arrayToStrUnderInterval(this.theTaskData.Week),
+          Week: this.theTaskData.Week.join("_"),
           Volume:
             this.theTaskData.StartVolume + "-" + this.theTaskData.EndVolume,
-          Groups: _.arrayToStrUnderInterval(this.theTaskData.GroupList),
+          Groups:this.theTaskData.GroupList.join("_"),
           Token: this.tokenStr
         };
 

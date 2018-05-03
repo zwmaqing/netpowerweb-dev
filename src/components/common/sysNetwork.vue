@@ -4,7 +4,7 @@
       <div class="column p60">自动获取IP地址</div>
       <div class="column p40 center">
         <el-switch style="display: block" v-model="isGetIPFromDHCP" active-color="#13ce66" inactive-color="#ff4949" active-text="是"
-          inactive-text="否">
+          inactive-text="否" v-on:change="dhcpChanged">
         </el-switch>
       </div>
     </div>
@@ -95,6 +95,11 @@ export default {
         this.dnsServerIP = res.Data.DevDNS;
       });
     },
+    dhcpChanged(e) {
+      if (e) {
+        this.setDevIP();
+      }
+    },
     setDevIP() {
       let data = {
         CMD: "ChangeIP",
@@ -124,7 +129,6 @@ export default {
   watch: {},
   mounted: function() {
     this.getDevIP();
-    
   }
 };
 </script>
