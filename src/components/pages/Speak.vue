@@ -28,7 +28,7 @@
           </el-form-item>
           <el-form-item label="播报名称:" label-width="75px" v-show="fastButtonSet.IsEdit">
             <div id="styleDefW">
-              <el-input v-model="fastButtonSet.AnotherName" :minlength=2 :maxlength=10  placeholder="快捷播报名称"></el-input>
+              <el-input v-model="fastButtonSet.AnotherName" :minlength=2 :maxlength=10 placeholder="快捷播报名称"></el-input>
             </div>
           </el-form-item>
           <div class="el-row--flex is-justify-end">
@@ -87,387 +87,394 @@
 </template>
 
 <script>
-import { mapGetters, mapActions } from "vuex";
-import api from "../../api";
-import * as _ from "../../util/tools"; //
-import Vue from "vue";
+  import {
+    mapGetters,
+    mapActions
+  } from "vuex";
+  import api from "../../api";
+  import * as _ from "../../util/tools"; //
+  import Vue from "vue";
 
-export default {
-  components: {},
-  data() {
-    return {
-      isTaskRuning: true,
-      playing: false,
-      playStatus: "playing",
-      ttsSetting: {
-        roles: [
-          {
-            value: "women",
-            label: "成年女声"
-          },
-          {
-            value: "man",
-            label: "成年男士"
-          },
-          {
-            value: "girl",
-            label: "童声女孩"
-          }
-        ],
-        Volume: 8,
-        Speed: 4,
-        Pitch: 5
-      },
-      ttsSetFormVisible: false,
-      ttsSetLabelWidth: "80px",
-      speakData: {
-        speakContent: "",
-        role: "women",
-        groupList: []
-      },
-      fastButtonSet: {
-        IsEdit: false,
-        FastButtonID: 0,
-        AnotherName: ""
-      },
-      fastbuttons: [],
-      spaekHistory: [],
-      isUserFireAlarm: false
-    };
-  },
-  computed: {
-    ...mapGetters({
-      screenWidth: "screenWidth",
-      screenHeight: "screenHeight",
-      isMobileDev: "isMobileDev",
-      isPcDev: "isPcDev",
-      isLogin: "isLogin",
-      tokenStr: "tokenStr",
-      groupsTotal: "groupsTotal",
-      groups: "groups",
-      channals: "channals"
-    }),
-    allChannalsGroups() {
-      let allChannalsGroups = [];
-      this.channals.forEach(function(value, index, array) {
-        let one = {};
-        one.GroupID = value.ChannelID;
-        one.GroupName = value.ChannelName;
-        allChannalsGroups.push(one);
-      });
-      this.groups.forEach(function(value, index, array) {
-        let one = {};
-        one.GroupID = value.GroupID;
-        one.GroupName = value.GroupName;
-        allChannalsGroups.push(one);
-      });
-      return allChannalsGroups;
-    }
-  },
-  mounted() {},
-  methods: {
-    ...mapActions(["setPath", "getGroupsTotal", "getGroups", "getChannals"]),
-    speakInputTxt() {
-      if (this.speakData.speakContent.length < 1) {
-        this.$message({
-          message: "请输入播报的文字内容",
-          type: "warning"
-        });
-        return;
-      }
-      if (this.speakData.groupList.length < 1) {
-        this.$message({
-          message: "请选择收听播报的喇叭或分区。",
-          type: "warning"
-        });
-        return;
-      }
-      this.speakTxtTTS(this.speakData.speakContent);
-      //检查缓存有没有，没有则添加到浏览器缓存，以用于历史记录
-      this.saveSpeakToLocalStorage();
-    },
-    speakTxtTTS(content, groups, volume, speed, role, pitch) {
-      let params = {
-        CMD: "SpeakTTS",
-        Content: content, //this.speakData.speakContent,
-        Groups:
-          groups == undefined ? this.speakData.groupList.join("_") : groups,
-        Volume: volume == undefined ? this.ttsSetting.Volume : volume,
-        Speed: speed == undefined ? this.ttsSetting.Speed : speed,
-        Role: role == undefined ? this.speakData.role : role,
-        Pitch: pitch == undefined ? this.ttsSetting.Pitch : pitch,
-        Token: this.tokenStr
+  export default {
+    components: {},
+    data() {
+      return {
+        isTaskRuning: true,
+        playing: false,
+        playStatus: "playing",
+        ttsSetting: {
+          roles: [{
+              value: "women",
+              label: "成年女声"
+            },
+            {
+              value: "man",
+              label: "成年男士"
+            },
+            {
+              value: "girl",
+              label: "童声女孩"
+            }
+          ],
+          Volume: 8,
+          Speed: 4,
+          Pitch: 5
+        },
+        ttsSetFormVisible: false,
+        ttsSetLabelWidth: "80px",
+        speakData: {
+          speakContent: "",
+          role: "women",
+          groupList: []
+        },
+        fastButtonSet: {
+          IsEdit: false,
+          FastButtonID: 0,
+          AnotherName: ""
+        },
+        fastbuttons: [],
+        spaekHistory: [],
+        isUserFireAlarm: false
       };
-      api.Speak(params).then(res => {
-        if (res.Status) {
+    },
+    computed: {
+      ...mapGetters({
+        screenWidth: "screenWidth",
+        screenHeight: "screenHeight",
+        isMobileDev: "isMobileDev",
+        isPcDev: "isPcDev",
+        isLogin: "isLogin",
+        tokenStr: "tokenStr",
+        groupsTotal: "groupsTotal",
+        groups: "groups",
+        channals: "channals"
+      }),
+      allChannalsGroups() {
+        let allChannalsGroups = [];
+        this.channals.forEach(function (value, index, array) {
+          let one = {};
+          one.GroupID = value.ChannelID;
+          one.GroupName = value.ChannelName;
+          allChannalsGroups.push(one);
+        });
+        this.groups.forEach(function (value, index, array) {
+          let one = {};
+          one.GroupID = value.GroupID;
+          one.GroupName = value.GroupName;
+          allChannalsGroups.push(one);
+        });
+        return allChannalsGroups;
+      }
+    },
+    mounted() {},
+    methods: {
+      ...mapActions(["setPath", "getGroupsTotal", "getGroups", "getAllGroups2p", "getChannals"]),
+      speakInputTxt() {
+        if (this.speakData.speakContent.length < 1) {
           this.$message({
-            showClose: true,
-            message: "播报请求已成功提交",
-            type: "success"
-          });
-        } else {
-          this.$message({
-            message: "播报请求提交失败！请检查后重试。",
+            message: "请输入播报的文字内容",
             type: "warning"
           });
+          return;
         }
-      });
-    },
-    userFireAlarm() {
-      let params = {
-        CMD: this.isUserFireAlarm ? "StopFireAlarm" : "FireAlarm",
-        Groups: "100",
-        Token: this.tokenStr
-      };
-      api.Speak(params).then(res => {
-        if (res.Status) {
-          if (params.CMD === "FireAlarm") {
-            this.isUserFireAlarm = true;
+        if (this.speakData.groupList.length < 1) {
+          this.$message({
+            message: "请选择收听播报的喇叭或分区。",
+            type: "warning"
+          });
+          return;
+        }
+        this.speakTxtTTS(this.speakData.speakContent);
+        //检查缓存有没有，没有则添加到浏览器缓存，以用于历史记录
+        this.saveSpeakToLocalStorage();
+      },
+      speakTxtTTS(content, groups, volume, speed, role, pitch) {
+        let params = {
+          CMD: "SpeakTTS",
+          Content: content, //this.speakData.speakContent,
+          Groups: groups == undefined ? this.speakData.groupList.join("_") : groups,
+          Volume: volume == undefined ? this.ttsSetting.Volume : volume,
+          Speed: speed == undefined ? this.ttsSetting.Speed : speed,
+          Role: role == undefined ? this.speakData.role : role,
+          Pitch: pitch == undefined ? this.ttsSetting.Pitch : pitch,
+          Token: this.tokenStr
+        };
+        api.Speak(params).then(res => {
+          if (res.Status) {
+            this.$message({
+              showClose: true,
+              message: "播报请求已成功提交",
+              type: "success"
+            });
           } else {
-            this.isUserFireAlarm = false;
+            this.$message({
+              message: "播报请求提交失败！请检查后重试。",
+              type: "warning"
+            });
           }
+        });
+      },
+      userFireAlarm() {
+        let params = {
+          CMD: this.isUserFireAlarm ? "StopFireAlarm" : "FireAlarm",
+          Groups: "100",
+          Token: this.tokenStr
+        };
+        api.Speak(params).then(res => {
+          if (res.Status) {
+            if (params.CMD === "FireAlarm") {
+              this.isUserFireAlarm = true;
+            } else {
+              this.isUserFireAlarm = false;
+            }
+            this.$message({
+              showClose: true,
+              message: "播报请求已成功提交",
+              type: "success"
+            });
+          } else {
+            this.$message({
+              message: "播报请求提交失败！请检查后重试。",
+              type: "warning"
+            });
+          }
+        });
+      },
+      speakTime() {
+        let time = new Date();
+        let timeStr =
+          "现在时间 " + time.getHours() + "点 " + time.getMinutes() + "分";
+        this.speakTxtTTS(timeStr, "100");
+      },
+      fastSpaekButton(but) {
+        this.speakTxtTTS(
+          but.Content,
+          but.Groups.join("_"),
+          but.Volume,
+          but.Speed,
+          but.Role,
+          but.Pitch
+        );
+      },
+      editFastSpaekButton(but) {
+        this.$notify.info({
+          title: "消息",
+          message: "修改快捷播报配置后,请保存快捷播报."
+        });
+        this.fastButtonSet.IsEdit = true;
+        this.fastButtonSet.FastButtonID = but.Index;
+        this.fastButtonSet.AnotherName = but.AnotherName;
+        this.speakData.speakContent = but.Content;
+        this.speakData.role = but.Role;
+        this.speakData.groupList = but.Groups;
+        this.ttsSetting.Volume = but.Volume;
+        this.ttsSetting.Speed = but.Speed;
+        this.ttsSetting.Pitch = but.Pitch;
+      },
+      saveFastSpaek() {
+        if (this.fastButtonSet.AnotherName == "") {
           this.$message({
-            showClose: true,
-            message: "播报请求已成功提交",
-            type: "success"
-          });
-        } else {
-          this.$message({
-            message: "播报请求提交失败！请检查后重试。",
+            message: "请输入快捷播报名称!",
             type: "warning"
           });
+          return;
         }
-      });
-    },
-    speakTime() {
-      let time = new Date();
-      let timeStr =
-        "现在时间 " + time.getHours() + "点 " + time.getMinutes() + "分";
-      this.speakTxtTTS(timeStr, "100");
-    },
-    fastSpaekButton(but) {
-      this.speakTxtTTS(
-        but.Content,
-        but.Groups.join("_"),
-        but.Volume,
-        but.Speed,
-        but.Role,
-        but.Pitch
-      );
-    },
-    editFastSpaekButton(but) {
-      this.$notify.info({
-        title: "消息",
-        message: "修改快捷播报配置后,请保存快捷播报."
-      });
-      this.fastButtonSet.IsEdit = true;
-      this.fastButtonSet.FastButtonID = but.Index;
-      this.fastButtonSet.AnotherName = but.AnotherName;
-      this.speakData.speakContent = but.Content;
-      this.speakData.role = but.Role;
-      this.speakData.groupList = but.Groups;
-      this.ttsSetting.Volume = but.Volume;
-      this.ttsSetting.Speed = but.Speed;
-      this.ttsSetting.Pitch = but.Pitch;
-    },
-    saveFastSpaek() {
-      if (this.fastButtonSet.AnotherName == "") {
-        this.$message({
-          message: "请输入快捷播报名称!",
-          type: "warning"
-        });
-        return;
-      }
-      if (this.speakData.groupList.length == 0) {
-        this.$message({
-          message: "请选择快捷播报 的收听分区分组!",
-          type: "warning"
-        });
-        return;
-      }
-      //存储快捷播报
-      this.fastButtonSet.IsEdit = false;
-      //发出修改命令
-      let params = {
-        CMD: "SetShortCutKey",
-        Index: this.fastButtonSet.FastButtonID,
-        AnotherName: this.fastButtonSet.AnotherName,
-        Content: this.speakData.speakContent,
-        Groups: this.speakData.groupList.join("_"),
-        Volume: this.ttsSetting.Volume,
-        Speed: this.ttsSetting.Speed,
-        Role: this.speakData.role,
-        Pitch: this.ttsSetting.Pitch,
-        Token: this.tokenStr
-      };
-      api.Speak(params).then(res => {
-        if (res.Status) {
+        if (this.speakData.groupList.length == 0) {
           this.$message({
-            showClose: true,
-            message: "快捷播报修改请求，成功！",
-            type: "success"
-          });
-        } else {
-          this.$message({
-            message: "快捷播报修改请求失败！请检查后重试。",
+            message: "请选择快捷播报 的收听分区分组!",
             type: "warning"
           });
+          return;
         }
-      });
-      //恢复
-      this.speakData.speakContent = "";
-      this.speakData.groupList = [];
-      //重载快捷播报数据
-      this.getAllFastSpeak();
-    },
-    getAllFastSpeak() {
-      let params = {
-        CMD: "GetShortCutKey",
-        Range: "1-10",
-        Token: this.tokenStr
-      };
-      api.Speak(params).then(res => {
-        if (res.Status) {
-          this.fastbuttons = res.Data;
-        } else {
-          console.log("GetShortCutKey Ero");
+        //存储快捷播报
+        this.fastButtonSet.IsEdit = false;
+        //发出修改命令
+        let params = {
+          CMD: "SetShortCutKey",
+          Index: this.fastButtonSet.FastButtonID,
+          AnotherName: this.fastButtonSet.AnotherName,
+          Content: this.speakData.speakContent,
+          Groups: this.speakData.groupList.join("_"),
+          Volume: this.ttsSetting.Volume,
+          Speed: this.ttsSetting.Speed,
+          Role: this.speakData.role,
+          Pitch: this.ttsSetting.Pitch,
+          Token: this.tokenStr
+        };
+        api.Speak(params).then(res => {
+          if (res.Status) {
+            this.$message({
+              showClose: true,
+              message: "快捷播报修改请求，成功！",
+              type: "success"
+            });
+          } else {
+            this.$message({
+              message: "快捷播报修改请求失败！请检查后重试。",
+              type: "warning"
+            });
+          }
+        });
+        //恢复
+        this.speakData.speakContent = "";
+        this.speakData.groupList = [];
+        //重载快捷播报数据
+        setTimeout(() => {
+          this.getAllFastSpeak();
+        }, 500);
+
+      },
+      getAllFastSpeak() {
+        let params = {
+          CMD: "GetShortCutKey",
+          Range: "1-10",
+          Token: this.tokenStr
+        };
+        api.Speak(params).then(res => {
+          if (res.Status) {
+            this.fastbuttons = res.Data;
+          } else {
+            console.log("GetShortCutKey Ero");
+          }
+        });
+      },
+      rowClick(row, event, column) {},
+      speakHistoricalRecord(row) {
+        this.speakTxtTTS(
+          row.Content,
+          row.Groups.join("_"),
+          row.Volume,
+          row.Speed,
+          row.Role,
+          row.Pitch
+        );
+      },
+      speakHistoricalEdit(row) {
+        //载入到Input
+        this.speakData.speakContent = row.Content;
+        this.speakData.role = row.Role;
+        this.speakData.groupList = row.Groups;
+        this.ttsSetting.Volume = row.Volume;
+        this.ttsSetting.Speed = row.Speed;
+        this.ttsSetting.Pitch = row.Pitch;
+      },
+      speakHistoricalDel(row) {
+        //删除
+        var index = this.spaekHistory.indexOf(row);
+        //console.log("Index:" + index);
+        if (index > -1) {
+          this.spaekHistory.splice(index, 1);
+          var storage = window.localStorage;
+          storage.setItem("spaekHistory", JSON.stringify(this.spaekHistory));
         }
-      });
-    },
-    rowClick(row, event, column) {},
-    speakHistoricalRecord(row) {
-      this.speakTxtTTS(
-        row.Content,
-        row.Groups.join("_"),
-        row.Volume,
-        row.Speed,
-        row.Role,
-        row.Pitch
-      );
-    },
-    speakHistoricalEdit(row) {
-      //载入到Input
-      this.speakData.speakContent = row.Content;
-      this.speakData.role = row.Role;
-      this.speakData.groupList = row.Groups;
-      this.ttsSetting.Volume = row.Volume;
-      this.ttsSetting.Speed = row.Speed;
-      this.ttsSetting.Pitch = row.Pitch;
-    },
-    speakHistoricalDel(row) {
-      //删除
-      var index = this.spaekHistory.indexOf(row);
-      //console.log("Index:" + index);
-      if (index > -1) {
-        this.spaekHistory.splice(index, 1);
+      },
+      saveSpeakToLocalStorage() {
         var storage = window.localStorage;
+        var speakRecord = {
+          Content: this.speakData.speakContent,
+          Groups: this.speakData.groupList,
+          Volume: this.ttsSetting.Volume,
+          Speed: this.ttsSetting.Speed,
+          Role: this.speakData.role,
+          Pitch: this.ttsSetting.Pitch,
+          Token: this.tokenStr
+        };
+        if (this.spaekHistory == null) {
+          this.spaekHistory = [];
+        }
+        this.spaekHistory.push(speakRecord);
         storage.setItem("spaekHistory", JSON.stringify(this.spaekHistory));
-      }
+        //
+      },
+      loadSpeakRecordLocalStorage() {
+        var storage = window.localStorage;
+        var history = JSON.parse(storage.getItem("spaekHistory"));
+        if (history != null) {
+          this.spaekHistory = history;
+        } else {
+          this.spaekHistory = [];
+        }
+      },
+      longTimeTest() {}
     },
-    saveSpeakToLocalStorage() {
-      var storage = window.localStorage;
-      var speakRecord = {
-        Content: this.speakData.speakContent,
-        Groups: this.speakData.groupList,
-        Volume: this.ttsSetting.Volume,
-        Speed: this.ttsSetting.Speed,
-        Role: this.speakData.role,
-        Pitch: this.ttsSetting.Pitch,
-        Token: this.tokenStr
-      };
-      if (this.spaekHistory == null) {
-        this.spaekHistory = [];
+    watch: {},
+    created() {
+      //组件创建完后
+      //在此触发隐藏Playbar  显示Speak按钮
+      this.setPath("speak");
+      if (this.groupsTotal == 0) {
+        //this.getGroupsTotal();
+        //this.getGroups("0-15"); 
+        this.getAllGroups2p();
+        //需要完善分页请求
+        this.getChannals();
       }
-      this.spaekHistory.push(speakRecord);
-      storage.setItem("spaekHistory", JSON.stringify(this.spaekHistory));
-      //
-    },
-    loadSpeakRecordLocalStorage() {
-      var storage = window.localStorage;
-      var history = JSON.parse(storage.getItem("spaekHistory"));
-      if (history != null) {
-        this.spaekHistory = history;
-      } else {
-        this.spaekHistory = [];
-      }
-    },
-    longTimeTest() {}
-  },
-  watch: {},
-  created() {
-    //组件创建完后
-    //在此触发隐藏Playbar  显示Speak按钮
-    this.setPath("speak");
-    if (this.groupsTotal == 0) {
-      this.getGroupsTotal();
-      this.getGroups("0-15"); //需要完善分页请求
-      this.getChannals();
+      this.getAllFastSpeak();
+      this.loadSpeakRecordLocalStorage();
+      //console.log("in to speak");
     }
-    this.getAllFastSpeak();
-    this.loadSpeakRecordLocalStorage();
-    //console.log("in to speak");
-  }
-};
+  };
+
 </script>
 
 <style lang="scss" scoped>
-.Grid {
-  display: -webkit-flex;
-  display: flex;
-  width: 100%;
-  height: 100%;
-  .Grid-cell.u-1of2 {
+  .Grid {
+    display: -webkit-flex;
     display: flex;
-    flex: 0 0 50%;
-    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    .Grid-cell.u-1of2 {
+      display: flex;
+      flex: 0 0 50%;
+      flex-direction: column;
+    }
+    .Grid-cell.u-1of1 {
+      display: flex;
+      flex: 0 0 100%;
+      flex-direction: column;
+    }
   }
-  .Grid-cell.u-1of1 {
-    display: flex;
-    flex: 0 0 100%;
-    flex-direction: column;
+
+  #spaekIn {
+    .el-form-item {
+      margin-bottom: 12px;
+    }
   }
-}
 
-#spaekIn {
-  .el-form-item {
-    margin-bottom: 12px;
+  #fastSpaek {
+    background-color: #f8f8ff;
+    position: relative;
+    flex: 1;
+    overflow: auto;
   }
-}
 
-#fastSpaek {
-  background-color: #f8f8ff;
-  position: relative;
-  flex: 1;
-  overflow: auto;
-}
-
-#styleDefW .el-select {
-  width: 100%;
-}
-
-#styleDefW1 .el-select {
-  width: 70%;
-}
-
-#fastSpaek .el-button {
-  margin: 4px 0px;
-  padding: 10px 10px;
-}
-
-#fastSpaek .el-button-group {
-  margin: 1px 2px;
-  padding: 1px 2px;
-}
-
-.cell {
-  .el-button + .el-button {
-    margin-left: 0px;
+  #styleDefW .el-select {
+    width: 100%;
   }
-  .el-button--small {
-    padding: 10px 4px;
-    font-size: 12px;
-    border-radius: 3px;
+
+  #styleDefW1 .el-select {
+    width: 70%;
   }
-}
+
+  #fastSpaek .el-button {
+    margin: 4px 0px;
+    padding: 10px 10px;
+  }
+
+  #fastSpaek .el-button-group {
+    margin: 1px 2px;
+    padding: 1px 2px;
+  }
+
+  .cell {
+    .el-button+.el-button {
+      margin-left: 0px;
+    }
+    .el-button--small {
+      padding: 10px 4px;
+      font-size: 12px;
+      border-radius: 3px;
+    }
+  }
+
 </style>
-

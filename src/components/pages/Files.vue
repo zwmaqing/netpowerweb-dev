@@ -43,8 +43,6 @@
   </div>
 </template>
 
-
-
 <script>
 import animationMenu from "../common/animationMenu";
 
@@ -78,7 +76,8 @@ export default {
       isMobileDev: "isMobileDev",
       tokenStr: "tokenStr",
       isPcDev: "isPcDev",
-      isLogin: "isLogin"
+      isLogin: "isLogin",
+      delFileInfo:"delFileInfo"
     })
     // ...mapGetters(["listenLists", "showLoading"])
   },
@@ -292,6 +291,14 @@ export default {
       for (let item of this.musicLists) {
         Vue.set(item, "menuShow", false);
       }
+    },
+    delFileInfo(){
+       const i = this.musicLists.findIndex(x => x.Index == this.delFileInfo.Index)
+        //console.log(i);
+        if (i < 0) {
+          return;
+        }
+        this.musicLists.splice(i,1);
     }
   },
   created() {

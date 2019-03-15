@@ -7,16 +7,16 @@ import {
 // axios 配置
 //axios.defaults.timeout = 5000;
 //axios.defaults.baseURL = 'http://localhost:3000';
-axios.defaults.baseURL = 'http://192.168.10.233';
+axios.defaults.baseURL = '';
 
 // 创建实例时设置配置的默认值
 var instance = axios.create({
-  baseURL: 'http://192.168.10.233',
+  baseURL: 'http://192.168.10.112',//'http://192.168.10.194'
   timeout: 3000
 });
 
 var instanceSync = axios.create({
-  baseURL: 'http://192.168.10.233',//'http://192.168.10.106'
+  baseURL: 'http://192.168.10.112',//'http://192.168.10.194'
   timeout: 3000,
 });
 
@@ -32,12 +32,12 @@ instance.interceptors.request.use(config => {
   //element ui Loading方法
    // loadinginstace = Loading.service({
     //  fullscreen: true
- // })
+ // })C
   return config
 }, error => {
  // loadinginstace.close()
   Message.error({
-    message: '加载超时,请检查网络和设备状态。'
+    message: '加载超时,请刷新页面或者检查网络和设备状态。'
   })
   return Promise.reject(error)
 })
@@ -49,7 +49,7 @@ instance.interceptors.response.use(data => {
 }, error => {
   //loadinginstace.close()
   Message.error({
-    message: '加载失败，请检查网络和设备状态。'
+    message: '加载失败，请刷新页面或者检查网络和设备状态。'
   })
   return Promise.reject(error)
 })

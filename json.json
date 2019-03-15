@@ -1,0 +1,29 @@
+{
+
+  "*GetRunningTask*": {
+    "Status": true,
+    "StatusCode": 200,
+    "StatusMessage": "Get data success.",
+    "DetailedInfo": null,
+    "Data": {
+      "IsTaskRunning": true,
+      "TaskID": "131",
+      "TaskName": "实时音乐播放任务",
+      "TaskType": "Timing",
+      "Week": [],
+      "Volume": 70,
+      "Projects": 0,
+      "GroupList": [100],
+      "StartTime": "0:0:0",
+      "TimeSpan": "0:0:0",
+      "TaskRemainingTime": "0:0:0",
+      "Status": "Running",
+      "TrackName": "每天爱你多一些.mp3",
+      "TrackTime": "0:4:39",
+      "TrackPastTime": "0:2:20",
+      "TrackRemainingTime": "0:2:19"
+    }
+  }
+
+}
+

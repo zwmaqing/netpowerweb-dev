@@ -47,7 +47,7 @@ const state = {
     },
     {
       label: "星期日",
-      key: 0
+      key: 7
     }
   ],
   phth: '', //curent router path
@@ -61,6 +61,7 @@ const state = {
   isDevCommBusy: false, //到设备是否通信忙，用于请求频繁控制
   IsTaskRunning: false,
   TaskRefreshTimer:0,
+  DelFileInfo:{}//
 }
 export default new Vuex.Store({
   state,

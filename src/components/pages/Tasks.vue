@@ -39,7 +39,7 @@
             任务名称:
           </div>
           <div class="column p40">
-            <el-input type="TaskName" size="small" v-model="theTaskData.TaskName" placeholder="任务名称" :disabled="isEditDisabled"></el-input>
+            <el-input type="TaskName" size="small" v-model="theTaskData.TaskName" placeholder="任务名称(10个汉字内)" :maxlength="10" :disabled="isEditDisabled"></el-input>
           </div>
           <div class="column p40 center">
             <el-switch v-model="theTaskData.TaskType" active-value="Music" inactive-value="Spaek" active-text="音乐" inactive-text="播报"
@@ -52,12 +52,12 @@
             起止时间:
           </div>
           <div class="column p40">
-            <el-time-picker size="small" v-model="theTaskData.TimeValue[0]" placeholder="开始时间点" :disabled="isEditDisabled">
+            <el-time-picker size="small" v-model="theTaskData.TimeValue[0]" placeholder="开始时间点" :disabled="isTimeDisabled">
             </el-time-picker>
           </div>
           <div class="column p40">
             <el-time-picker arrow-control size="small" v-model="theTaskData.TimeValue[1]" :picker-options="{ selectableRange: taskTimeRangeStr}"
-              placeholder="结束时间点" :disabled="isEditDisabled">
+              placeholder="结束时间点" :disabled="isTimeDisabled">
             </el-time-picker>
           </div>
         </div>
@@ -79,7 +79,7 @@
             有效周日:
           </div>
           <div class="p80" v-bind:class="{ 'miPadding': isMobileDev }">
-            <el-checkbox-group v-model="theTaskData.Week" size="small" :disabled="isEditDisabled">
+            <el-checkbox-group v-model="theTaskData.Week" size="small" :disabled="isTimeDisabled">
               <el-checkbox-button v-for="week in weekOptions" :label="week.key" :key="week.key">{{week.label}}</el-checkbox-button>
             </el-checkbox-group>
           </div>
@@ -126,7 +126,7 @@
           <el-table-column label="操作" width="130">
             <template slot-scope="scope">
               <el-button size="small" icon="el-icon-caret-right" @click="playTheProject(scope.row)" :disabled="isPlayProjectDisabled">播放</el-button>
-              <el-button size="small" type="danger" icon="el-icon-delete" @click="delTheProject(scope.row)" :disabled="isEditDisabled">删除</el-button>
+              <el-button size="small" type="danger" icon="el-icon-delete" @click="delTheProject(scope.row)" :disabled="isEditDisabled||isTimeDisabled">删除</el-button>
             </template>
           </el-table-column>
           <slot name="append"></slot>
@@ -144,6 +144,9 @@
           <el-checkbox v-for="item in allChannalsGroups" :key="item.GroupID" :label="item.GroupID">{{item.GroupName}}</el-checkbox>
         </el-checkbox-group>
       </el-dialog>
+      <el-dialog title="指定默认曲目位置" :visible.sync="isShowFileLocal" width="80%">
+        <el-tree :data="localData" :props="defaultProps" node-key="id" @node-click="resourcesNodeClick" :render-content="renderContent"></el-tree>
+      </el-dialog>
     </div>
   </div>
 </template>
@@ -153,21 +156,21 @@ import { mapGetters, mapActions, mapMutations } from "vuex";
 import api from "../../api";
 import * as _ from "../../util/tools"; //
 import Vue from "vue";
+let id = 1000;
 
 export default {
   components: {},
   data() {
     return {
-      isTaskRuning: true,
-      playing: false,
-      playStatus: "playing",
       isTaskLoading: false,
       dialogVisible: false,
       isEditDisabled: true,
+      isTimeDisabled: true,
       isAddNewTask: false, //可以考虑取消，通过theTask 的TaskID为0判断
       isProjectLoading: false,
       isShowTaskEdit: false,
       isShowSelectGroup: false,
+      isShowFileLocal: false,
       checkList: [],
       theTaskData: {
         TaskID: 0,
@@ -186,7 +189,34 @@ export default {
         IsSystem: false
       },
       theTaskProjects: [],
-      taskProPageIndex: 0
+      taskProPageIndex: 0,
+      defaultProps: {
+        children: "children",
+        label: "label"
+      },
+
+      localData: [
+        {
+          id: 1,
+          label: "设备本地播放资源",
+          DirName: "",
+          filesCount: 0,
+          children: [
+            {
+              id: 10,
+              label: "内部存储器",
+              DirName: "1:",
+              filesCount: 0
+            },
+            {
+              id: 11,
+              label: "USB可移动存储器",
+              DirName: "2:",
+              filesCount: 0
+            }
+          ]
+        }
+      ]
     };
   },
   computed: {
@@ -203,7 +233,8 @@ export default {
       taskPageIndex: "taskPageIndex",
       isTaskRefresh: "isTaskRefresh",
       groups: "groups",
-      channals: "channals"
+      channals: "channals",
+      IsTaskRunning_s: "isTaskRunning"
     }),
     taskListHeighX() {
       let height = this.screenHeight - 117;
@@ -237,19 +268,28 @@ export default {
     },
     allChannalsGroups() {
       let allChannalsGroups = [];
-      this.channals.forEach(function(value, index, array) {
-        let one = {};
-        one.GroupID = value.ChannelID;
-        one.GroupName = value.ChannelName;
-        allChannalsGroups.push(one);
-      });
       this.groups.forEach(function(value, index, array) {
         let one = {};
         one.GroupID = value.GroupID;
         one.GroupName = value.GroupName;
         allChannalsGroups.push(one);
       });
+      this.channals.forEach(function(value, index, array) {
+        let one = {};
+        one.GroupID = value.ChannelID;
+        one.GroupName = value.ChannelName;
+        allChannalsGroups.push(one);
+      });
       return allChannalsGroups;
+    },
+    isTaskRunning() {
+      var i = this.tasks.findIndex(x => x.Status == "Running");
+      if (i > -1 || this.IsTaskRunning_s) {
+        //  console.log("Task-"+this.IsTaskRunning_s);
+        return true;
+      } else {
+        return false;
+      }
     }
   },
   mounted() {
@@ -260,7 +300,9 @@ export default {
       "setTaskList",
       "getTasks",
       "getTasksTotal",
+      "getHomePageTasks",
       "getGroups",
+      "getAllGroups2p",
       "getChannals",
       "strtTask",
       "endRuningTask",
@@ -276,8 +318,11 @@ export default {
     taskStatueClass(ro, index) {
       let row = ro.row;
       var d = new Date();
-      d.getDay();
-      if (!row.Week.contains(d.getDay())) {
+      var weekday = d.getDay();
+      if (weekday == 0) {
+        weekday = 7;
+      }
+      if (!row.Week.contains(weekday)) {
         return "task-invalid";
       }
       if (row.Status == "Running" || row.Status == "Pause") {
@@ -296,8 +341,11 @@ export default {
         return "primary";
       }
       var d = new Date();
-      d.getDay();
-      if (!row.Week.contains(d.getDay())) {
+      var weekday = d.getDay();
+      if (weekday == 0) {
+        weekday = 7;
+      }
+      if (!row.Week.contains(weekday)) {
         return "info";
       }
     },
@@ -305,6 +353,7 @@ export default {
       if (column.label == "定时播放任务") {
         this.getSelectTaskData(row);
         this.isEditDisabled = true;
+        this.isTimeDisabled = true;
         if (this.isMobileDev) {
           this.$message({
             showClose: true,
@@ -394,12 +443,20 @@ export default {
       this.isAddNewTask = true;
       this.theTaskData = this.getNewTask();
       this.isEditDisabled = false;
+      this.isTimeDisabled = false;
       this.theTaskProjects = [];
       if (this.isMobileDev) {
         this.isShowTaskEdit = true;
       }
     },
     startOrStopTask(row) {
+      if (row.Status === "Stop" && this.isTaskRunning) {
+        this.$message({
+          message: "有任务正在播放，请停止播放中的任务后再启动.",
+          type: "warning"
+        });
+        return;
+      }
       this.getSelectTaskData(row);
       if (this.isPcDev) {
         this.loardTaskProject("1-16");
@@ -419,8 +476,11 @@ export default {
         }
         case "Stop": {
           var d = new Date();
-          d.getDay();
-          if (row.Week.indexOf(d.getDay()) == -1) {
+          var weekday = d.getDay();
+          if (weekday == 0) {
+            weekday = 7;
+          }
+          if (row.Week.indexOf(weekday) == -1) {
             this.dialogVisible = true;
           } else {
             //实际启动操作
@@ -437,32 +497,35 @@ export default {
     },
     editTask(row) {
       this.getSelectTaskData(row);
-      let message = this.theTaskData.IsSystem
-        ? "系统默认任务不能编辑修改."
-        : "";
-      message =
+      let message =
         this.theTaskData.Status == "Running"
           ? "任务正在执行,不能编辑修改,请停止后更改."
           : message;
-      if (this.theTaskData.IsSystem || this.theTaskData.Status == "Running") {
+      if (this.theTaskData.Status == "Running") {
         this.$message({
           message: message,
           type: "warning"
         });
         return;
       }
+
       //小屏浏览，进入编辑页面时，获取任务项目列表
-      if (this.isMobileDev) {
-        this.loardTaskProject("1-16");
-        if (this.getProListCapacity() > 16 && this.theTaskData.Projects > 16) {
-          setTimeout(() => {
-            this.loardTaskProject("17-32");
-          }, 2500);
-        }
+
+      this.loardTaskProject("1-16");
+      if (this.getProListCapacity() > 16 && this.theTaskData.Projects > 16) {
+        setTimeout(() => {
+          this.loardTaskProject("17-32");
+        }, 2500);
       }
+
       this.isEditDisabled = false;
       if (this.isMobileDev) {
         this.isShowTaskEdit = true;
+      }
+      if (this.theTaskData.IsSystem) {
+        this.isTimeDisabled = true;
+      } else {
+        this.isTimeDisabled = false;
       }
     },
     swipRight: function(s) {
@@ -504,8 +567,19 @@ export default {
               this.theTaskData = this.getNewTask();
               this.theTaskProjects = [];
             } else {
+              var msg = "删除该任务失败！";
+              if (res.StatusCode == 400) {
+                msg += "该任务正被锁定(正在执行)";
+              }
+              if (res.StatusCode == 410) {
+                msg += "该任务已不存在了(其他终端删除了).";
+                this.delOneTaskForBuff(row.TaskID);
+                this.theTaskData = this.getNewTask();
+                this.theTaskProjects = [];
+              }
+              msg += "\n(" + res.StatusMessage + ")";
               this.$message({
-                message: "删除该任务失败！请检查后重试。",
+                message: msg,
                 type: "warning"
               });
             }
@@ -528,19 +602,25 @@ export default {
     },
     taskLoadMore(loction) {
       // 表格到底后执行  这里写你要做的事
+      //console.log("taskLoadMore");
       if (loction == "Bottom") {
         this.SET_TASKSPAGEINDEX(this.taskPageIndex + 1);
         //this.isTaskLoading = true; //显示加载loading
-        if (this.taskTotal < this.taskPageIndex * 16 + 1) {
+        var vv = this.taskPageIndex * 12 + 1;
+        if (this.taskTotal < this.taskPageIndex * 12 + 1) {
+          // console.log(this.taskTotal + " " + this.taskPageIndex + " " + vv);
           return;
         }
         let range =
-          (this.taskPageIndex * 16).toString() +
+          (this.taskPageIndex * 12 + 1).toString() +
           "-" +
-          ((this.taskPageIndex + 1) * 16 - 1).toString();
+          ((this.taskPageIndex + 1) * 12).toString();
         let self = this;
         if (self && !self._isDestroyed) {
-          this.getTasks({ range: range, isAdd: true });
+          this.getTasks({
+            range: range,
+            isAdd: true
+          });
         }
       }
     },
@@ -588,7 +668,10 @@ export default {
           });
           return;
         }
-        if (this.theTaskData.GroupList.length < 1) {
+        if (
+          this.theTaskData.TaskID != 129 &&
+          this.theTaskData.GroupList.length < 1
+        ) {
           this.$message({
             message: "警告哦，至少需要现在一个输出分区或分组!",
             type: "warning"
@@ -611,23 +694,29 @@ export default {
         //计算相差秒数
         let leave3 = leave2 % (60 * 1000); //计算分钟数后剩余的毫秒数
         let seconds = Math.round(leave3 / 1000);
-
+        if (timeSpanMS / 1000 == 0) {
+          this.$message({
+            message: "警告，任务时长为0!",
+            type: "warning"
+          });
+          return;
+        }
         let params = {
           CMD: this.isAddNewTask ? "AddTask" : "EditTask",
           TaskID: this.isAddNewTask ? 0 : this.theTaskData.TaskID,
           TaskName: this.theTaskData.TaskName,
           TaskType: this.theTaskData.TaskType,
-          IsSystem: false,
+          IsSystem: this.theTaskData.IsSystem,
           PlayModel: this.theTaskData.PlayModel,
           StartTime: this.theTaskData.TimeValue[0].format("hh:mm:ss"),
           TimeSpan: hours + ":" + minutes + ":" + seconds,
           Week: this.theTaskData.Week.join("_"),
           Volume:
             this.theTaskData.StartVolume + "-" + this.theTaskData.EndVolume,
-          Groups:this.theTaskData.GroupList.join("_"),
+          Groups: this.theTaskData.GroupList.join("_"),
           Token: this.tokenStr
         };
-
+        // console.log("TaskName:" + params.TaskName);
         api.Task(params).then(res => {
           res.$router = this.$router;
           this.isReloginToDev(res);
@@ -641,33 +730,30 @@ export default {
             if (res.StatusMessage.indexOf("TaskTimeOver") > 0) {
               message += "任务时间范围与既有任务时段重叠!";
             }
+            if (res.StatusCode == 410) {
+              message += "该定时任务已经不存在了(其他终端删除).";
+            }
+            message += "\n(" + res.DetailedInfo + ")";
           }
           this.$message({
             showClose: true,
-
             message: message,
-
             type: res.Status ? "success" : "warning"
           });
 
           //成功状态
-          if (res.Status) {
+          if (res.Status || res.StatusCode == 410) {
             this.isEditDisabled = true;
             this.isAddNewTask = false;
             this.returnTask(); //如果小屏，返回任务列表界面再刷新
-            this.getTasksTotal();
-            this.getTasks({ range: "1-12" });
-            if (this.getTaskListCapacity() > 12 && this.taskTotal > 12) {
-              setTimeout(() => {
-                this.getTasks({ range: "13-24", isAdd: true });
-              }, 2500);
-            }
-
-            // this.theTaskData = this.getNewTask();
+            setTimeout(() => {
+              this.getHomePageTasks(this.getTaskListCapacity());
+            }, 500);
           }
         });
       } else {
         this.isEditDisabled = true;
+        this.isTimeDisabled = true;
         this.isAddNewTask = false;
       }
     },
@@ -680,6 +766,7 @@ export default {
         ProIndex: row.Index,
         Token: this.tokenStr
       };
+      console.log(row);
       api.Task(params).then(res => {
         res.$router = this.$router; //是否需要重新登录检查
         this.isReloginToDev(res);
@@ -689,14 +776,27 @@ export default {
       });
     },
     delTheProject(row) {
+      if (this.theTaskData.TaskID == 129) {
+        this.$message({
+          message: "警告哦，不能删除此任务的曲目项.",
+          type: "warning"
+        });
+        return;
+      }
+
+      const i = this.theTaskProjects.findIndex(x => x.Index == row.Index);
+      //console.log(i);
+      if (i < 0) {
+        return;
+      }
       let params = {
         CMD: "DelTaskProject",
         TaskID: this.theTaskData.TaskID,
-        ProIndex: row.Index,
+        ProIndex: i + 1,
         Token: this.tokenStr
       };
-      this.isProjectLoading = true; //显示loading
 
+      this.isProjectLoading = true; //显示loading
       setTimeout(() => {
         this.isProjectLoading = false;
       }, 800);
@@ -706,8 +806,7 @@ export default {
         this.isReloginToDev(res);
 
         if (res.Status) {
-          this.theTaskProjects.splice(row.Index - 1, 1);
-          console.log(row.Index);
+          this.theTaskProjects.splice(i, 1);
         }
         this.$message({
           showClose: true,
@@ -726,14 +825,34 @@ export default {
         });
         return;
       }
-      //配置参数
-      this.$router.push({
-        path: "/files",
-        query: {
-          taskID: this.theTaskData.TaskID,
-          taskName: this.theTaskData.TaskName
-        }
-      });
+      if (this.theTaskData.Status == "Running") {
+        this.$message({
+          message: "任务正在播放,不能添加曲目,请停止后添加.",
+          type: "warning"
+        });
+        return;
+      }
+
+      if (this.theTaskData.TaskID == 129) {
+        this.$message({
+          message: "警告哦，默认播放U盘曲目,不能向其添加曲目项.",
+          type: "warning"
+        });
+        return;
+      }
+
+      if (this.theTaskData.TaskID == 100) {
+        this.isShowFileLocal = true;
+      } else {
+        //配置参数
+        this.$router.push({
+          path: "/files",
+          query: {
+            taskID: this.theTaskData.TaskID,
+            taskName: this.theTaskData.TaskName
+          }
+        });
+      }
     },
     loardTaskProject(range, isAdd) {
       let params = {
@@ -786,23 +905,123 @@ export default {
           // }, 1500);
         }
       }
+    },
+    resourcesNodeClick(data1, node) {},
+    refresh(node, data) {
+      if (node.level == 2) {
+        if (data.children && data.children.length > 0) {
+          data.children.splice(0, data.children.length);
+        }
+
+        let datap = {
+          CMD: "GetDirs",
+          Path: node.data.DirName,
+          Token: this.tokenStr
+        };
+        api.File(datap).then(res => {
+          res.$router = this.$router; //是否需要重新登录检查
+          this.isReloginToDev(res);
+          if (res.Status && res.Data.length > 1) {
+            node.data.filesCount = res.Data[0].FileNum;
+            res.Data.splice(0, 1);
+            for (let index = 0; index < res.Data.length; index++) {
+              let i = res.Data[index].DirName.lastIndexOf("/");
+              const name = res.Data[index].DirName.substr(i + 1);
+
+              const newChild = {
+                id: id++,
+                label: name,
+                DirName: res.Data[index].DirName,
+                filesCount: res.Data[index].FileNum,
+                children: []
+              };
+              if (!data.children) {
+                this.$set(data, "children", []);
+              }
+              data.children.push(newChild);
+            }
+            node.expanded = true;
+          } else {
+          }
+        });
+      }
+    },
+    selectLocation(node, data) {
+      let params = {
+        CMD: "AddTaskProject",
+        TaskID: this.theTaskData.TaskID,
+        FilePath: data.DirName,
+        Token: this.tokenStr
+      };
+      api.Task(params).then(res => {
+        this.$message({
+          showClose: true,
+          message:
+            "添加项目到定时任务" +
+            (res.Status ? "成功." : "失败!请检查后重试."),
+          type: res.Status ? "success" : "warning"
+        });
+        this.isShowFileLocal = false;
+        this.loardTaskProject("1-16");
+        if (this.getProListCapacity() > 16 && this.theTaskData.Projects > 16) {
+          setTimeout(() => {
+            this.loardTaskProject("17-32");
+          }, 1500);
+        }
+      });
+    },
+    renderContent(h, { node, data, store }) {
+      if (node.level > 1) {
+        return (
+          <span
+            class="icon14 icon-folder-o"
+            style="flex: 1; display: flex; align-items: center; justify-content: space-between; font-size: 14px; padding-right: 8px;"
+          >
+            {" "}
+            {data.label + " " + data.filesCount}
+            <span>
+              <el-button
+                style="font-size: 12px;"
+                type="text"
+                on-click={() => this.refresh(node, data)}
+              >
+                {" "}
+                刷新{" "}
+              </el-button>{" "}
+              <el-button
+                style="font-size: 12px;"
+                type="text"
+                on-click={() => this.selectLocation(node, data)}
+              >
+                {" "}
+                选择{" "}
+              </el-button>{" "}
+            </span>{" "}
+          </span>
+        );
+      } else {
+        return (
+          <span
+            class="icon14 icon-folder-o"
+            style=" align-items: center; font-size: 14px;"
+          >
+            {" "}
+            {data.label + " " + data.filesCount}{" "}
+          </span>
+        );
+      }
     }
   },
   watch: {},
   created() {
     this.SET_DEVCOMMBUSY(true);
-    //this.getGroupsTotal();
-    this.getTasksTotal();
-    this.getTasks({ range: "1-12" });
-    if (this.getTaskListCapacity() > 12 && this.taskTotal > 12) {
-      setTimeout(() => {
-        this.getTasks({ range: "13-24", isAdd: true });
-      }, 2500);
-    }
-    this.getGroups("1-16"); //需要完善分页请求
+
+    this.getHomePageTasks(this.getTaskListCapacity());
+
+    this.getAllGroups2p(); //需要完善分页请求
     this.getChannals();
   }
-}; 
+};
 </script>
 
 <style lang="scss" scoped>
@@ -843,8 +1062,7 @@ export default {
 }
 
 #right {
-  flex-flow: column;
-  //flex-direction: row-reverse;
+  flex-flow: column; //flex-direction: row-reverse;
   display: flex;
 
   .taskInfoInput {
@@ -925,4 +1143,3 @@ export default {
   font-size: 0;
 }
 </style>
-

@@ -9,7 +9,6 @@ function resolve(dir) {
 
 var BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
-// ...
 plugins: [new BundleAnalyzerPlugin()]
 
 module.exports = {
@@ -20,8 +19,7 @@ module.exports = {
     path: config.build.assetsRoot,
     filename: '[name].js',
     publicPath: process.env.NODE_ENV === 'production' ?
-      config.build.assetsPublicPath :
-      config.dev.assetsPublicPath
+      config.build.assetsPublicPath : config.dev.assetsPublicPath
   },
   resolve: {
     extensions: ['.js', '.vue', '.json'],
@@ -66,5 +64,11 @@ module.exports = {
         }
       }
     ]
+  },
+  externals: {
+    //打包例外
+    //'vue': 'Vue',
+    //'element-ui': 'ELEMENT',
+    //'vue-moment': 'moment'
   }
 }

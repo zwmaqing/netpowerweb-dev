@@ -68,6 +68,31 @@ export default {
       }
     });
   },
+  getPushGroups({
+    commit
+  }, range) {
+    let data = {
+      CMD: "GetCHGroups",
+      Range: range,
+      Token: store.state.tokenStr
+    };
+    api.Group(data).then(res => {
+      if (res.Status) {
+        res.Data.forEach(element => {
+          commit(types.PUSH_GROUPS, element);
+        });
+      }
+    });
+  },
+  getAllGroups2p({
+    dispatch,
+    commit
+  }) {
+    dispatch('getGroupsTotal').then(res => {
+      dispatch('getGroups', "0-15").then()
+      dispatch('getPushGroups', "16-32").then()
+    })
+  },
   getChannals({
     commit
   }) {
@@ -90,7 +115,7 @@ export default {
     };
     api.Task(data).then(res => {
       if (res.Status) {
-        commit(types.SET_TASKSTOTAL,res.Data.TaskCount);
+        commit(types.SET_TASKSTOTAL, res.Data.TaskCount);
       } else {
 
       }
@@ -108,7 +133,7 @@ export default {
       if (res.Status) {
         for (let index = 0; index < res.Data.length; index++) {
           if (params.isAdd) {
-            commit(types.SET_PUSHTASKSLIST,res.Data[index]);
+            commit(types.SET_PUSHTASKSLIST, res.Data[index]);
           }
         }
         if (!params.isAdd) {
@@ -120,6 +145,28 @@ export default {
         // }
       }
     });
+  },
+  getHomePageTasks({
+    dispatch,
+    commit
+  }, vessel) {
+    dispatch('getTasksTotal').then(res => {
+      commit(types.SET_TASKSPAGEINDEX, 0);
+      dispatch('getTasks', {
+        range: "1-12",
+        isAdd: false
+      }).then()
+
+      if (vessel > 12) {
+        commit(types.SET_TASKSPAGEINDEX, 1);
+        setTimeout(() => {
+          dispatch('getTasks', {
+            range: "13-24",
+            isAdd: true
+          }).then();
+        }, 450);
+      }
+    })
   },
   strtTask({
     commit
@@ -135,6 +182,15 @@ export default {
           TaskID: taskID,
           Status: "Running"
         });
+      } else {
+        var msg = "启动任务失败！";
+        if (res.StatusCode == 410) {
+          msg += "该任务已不存在了(其他终端删除了,请刷新页面.)";
+        }
+        msg += "\n(" + res.DetailedInfo + ")";
+        MessageBox.alert(msg, {
+          confirmButtonText: '确定'
+        })
       }
     });
   },
@@ -148,7 +204,7 @@ export default {
     api.Task(params).then(res => {
       if (res.Status) {
         commit(types.SET_TASKSTATUS, {
-          TaskID: -1,
+          TaskID: 0,
           Status: "Running"
         });
       }
@@ -184,4 +240,3 @@ export default {
     }
   }
 }
-

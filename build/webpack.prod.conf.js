@@ -109,14 +109,14 @@ if (config.build.productionGzip) {
 
   webpackConfig.plugins.push(
     new CompressionWebpackPlugin({
-      asset: '[path].gz[query]',
+      filename: '[path].gz[query]',//asset
       algorithm: 'gzip',
       test: new RegExp(
         '\\.(' +
         config.build.productionGzipExtensions.join('|') +
         ')$'
       ),
-      threshold: 10240,
+      threshold: 102400,//文件大小
       minRatio: 0.8
     })
   )

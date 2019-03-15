@@ -43,7 +43,7 @@
       <div class="column p15"> 有效周日</div>
       <div class="column p85">
         <el-checkbox-group v-model="autoPowerWeek" size="medium">
-          <el-checkbox-button v-for="week in weeks" :label="week.key" :key="week.key">{{week.label}}</el-checkbox-button>
+          <el-checkbox-button v-for="week in weekOptions" :label="week.key" :key="week.key">{{week.label}}</el-checkbox-button>
         </el-checkbox-group>
       </div>
     </div>
@@ -64,43 +64,11 @@ import { mapGetters } from "vuex";
 import api from "../../api/index";
 import * as _ from "../../util/tools";
 
-//移到到VUEX 公共常亮
-const weekOptions = [
-  {
-    label: "星期一",
-    key: 1
-  },
-  {
-    label: "星期二",
-    key: 2
-  },
-  {
-    label: "星期三",
-    key: 3
-  },
-  {
-    label: "星期四",
-    key: 4
-  },
-  {
-    label: "星期五",
-    key: 5
-  },
-  {
-    label: "星期六",
-    key: 6
-  },
-  {
-    label: "星期日",
-    key: 0
-  }
-];
 
 export default {
   data() {
     return {
       isAudioPower: true,
-      weeks: weekOptions,
       autoPowerWeek: [],
       onPowerTime: "07:00:00",
       offPowerTime: "19:00:00"
@@ -109,7 +77,8 @@ export default {
   computed: {
     ...mapGetters({
       isLogin: "isLogin",
-      tokenStr: "tokenStr"
+      tokenStr: "tokenStr",
+      weekOptions: "weekOptions"
     })
   },
   methods: {
@@ -171,7 +140,7 @@ export default {
         Switch: this.isAudioPower,
         OpenTime: this.onPowerTime,
         CloseTime: this.offPowerTime,
-        Week: _.arrayToStrUnderInterval(this.autoPowerWeek),
+        Week: this.autoPowerWeek.join("_"),
         Token: this.tokenStr
       };
 

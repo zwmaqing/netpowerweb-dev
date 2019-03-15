@@ -25,6 +25,9 @@ export default {
   [types.SET_GROUPS](state, groups) {
     state.groups = groups
   },
+  [types.PUSH_GROUPS](state, groups) {
+    state.groups.push(groups)
+  },
   [types.SET_CHANNALS](state, channals) {
     state.channals = channals
   },
@@ -41,6 +44,9 @@ export default {
     state.tasks.push(task)
   },
   [types.SET_TASKSTATUS](state, taskStatus) {
+    if(taskStatus.TaskID==0){
+      state.IsTaskRunning=false;  
+    }
     for (let index = 0; index < state.tasks.length; index++) {
       if (taskStatus.Status == 'Running') {
         if (state.tasks[index].TaskID == taskStatus.TaskID) {
@@ -48,10 +54,11 @@ export default {
         } else {
           state.tasks[index].Status = 'Stop';
         }
+        state.IsTaskRunning=true;
       } else {
-        if (state.tasks[index].TaskID == taskStatus.TaskID) {
+        
           state.tasks[index].Status = 'Stop';
-        }
+        
       }
     }
   },
@@ -73,5 +80,8 @@ export default {
   },
   [types.SET_DEVCOMMBUSY](state, isBusy) {
     state.isDevCommBusy = isBusy;
+  },
+  [types.SET_DELFILEINFO](state, fileInfo) {
+    state.DelFileInfo = fileInfo;
   }
 }

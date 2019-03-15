@@ -17,5 +17,7 @@ export default {
   runningTask: state => state.runningTask,
   isTaskRefresh: state => state.isTaskRefresh,
   TaskRefreshTimer: state => state.TaskRefreshTimer,
-  isDevCommBusy:state=>state.isDevCommBusy
+  isDevCommBusy:state=>state.isDevCommBusy,
+  delFileInfo:state=>state.DelFileInfo,
+  isTaskRunning:state=>state.IsTaskRunning
 }

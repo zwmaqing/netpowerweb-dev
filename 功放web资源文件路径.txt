@@ -1,0 +1,8 @@
+index.html :  http://netpower.oss-cn-hangzhou.aliyuncs.com/lwip/index_20181203/index.html
+favicon.ico   http://netpower.oss-cn-hangzhou.aliyuncs.com/lwip/favicon.ico
+js            http://netpower.oss-cn-hangzhou.aliyuncs.com/lwip/static/js/vendor.a40602b320181203gzip.js
+css           http://netpower.oss-cn-hangzhou.aliyuncs.com/lwip/static/css/app.2dd24d185f6c1f27e1bd20181203gzip.css
+
+
+
+固件是否自动升级标志字段："isAutoUpdate":true,
